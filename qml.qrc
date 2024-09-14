@@ -229,6 +229,8 @@
         <file>images/world-flags-globe.png</file>
         <file>images/restore-wallet-from-hardware@2x.png</file>
         <file>images/restore-wallet-from-hardware.png</file>
+        <file>images/restore-wallet-from-qr@2x.png</file>
+        <file>images/restore-wallet-from-qr.png</file>
         <file>images/open-wallet-from-file@2x.png</file>
         <file>images/open-wallet-from-file.png</file>
         <file>images/open-wallet-from-file-mainnet@2x.png</file>

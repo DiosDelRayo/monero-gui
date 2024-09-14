@@ -442,6 +442,7 @@ Verify update binary using 'shasum'-compatible (SHA256 algo) output signed by tw
 
 #ifdef WITH_SCANNER
     qmlRegisterType<QrCodeScanner>("moneroComponents.QRCodeScanner", 1, 0, "QRCodeScanner");
+    // TODO: 2024-09-13 add UR Scanner and UR Code
 #endif
 
     QQmlApplicationEngine engine;

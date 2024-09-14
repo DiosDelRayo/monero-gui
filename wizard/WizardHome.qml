@@ -155,6 +155,26 @@ Rectangle {
                 }
             }
 
+            Rectangle {
+                Layout.preferredHeight: 1
+                Layout.topMargin: 3
+                Layout.bottomMargin: 3
+                Layout.fillWidth: true
+                color: MoneroComponents.Style.dividerColor
+                opacity: MoneroComponents.Style.dividerOpacity
+            }
+
+            WizardMenuItem {
+                headerText: qsTr("Restore a view wallet scannig a QR code") + translationManager.emptyString
+                bodyText: qsTr("Import an existing wallet from a monero URI or json representation of a wallet.") + translationManager.emptyString
+                imageIcon: "qrc:///images/restore-wallet-from-qr.png"
+
+                onMenuClicked: {
+                    wizardStateView.state = "wizardOpenWallet1"
+                    wizardStateView.wizardOpenWallet1View.pageRoot.forceActiveFocus();
+                }
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: 16

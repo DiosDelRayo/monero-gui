@@ -1439,6 +1439,7 @@ ApplicationWindow {
         property int lockOnUserInActivityInterval: 10  // minutes
         property bool blackTheme: MoneroComponents.Style.blackTheme
         property bool checkForUpdates: true
+        property bool useURCode: false
         property bool autosave: true
         property int autosaveMinutes: 10
         property bool pruneBlockchain: false
