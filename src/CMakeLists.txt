@@ -1,4 +1,7 @@
 add_subdirectory(QR-Code-scanner)
+if(WITH_SCANNER)
+    add_subdirectory(ur)
+endif()
 add_subdirectory(openpgp)
 add_subdirectory(zxcvbn-c)
 
