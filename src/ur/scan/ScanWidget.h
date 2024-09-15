@@ -32,7 +32,7 @@ class ScanWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ScanWidget(QWidget *parent, bool manualExposure = false, int exposureTime = 10);
+    explicit ScanWidget(QWidget *parent);
     ~ScanWidget() override;
 
     QString decodedString = "";

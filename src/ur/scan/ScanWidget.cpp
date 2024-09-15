@@ -19,7 +19,7 @@
 #endif
 
 
-ScanWidget::ScanWidget(QWidget *parent, bool manualExposure, int exposureTime)
+ScanWidget::ScanWidget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ScanWidget)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -583,30 +583,22 @@ void ScanWidget::onCameraSwitched(int index) {
 }
 
 void ScanWidget::onDecoded(const QString &data) {
-    if (m_done) {
+    if (m_done)
         return;
-    }
-    
     if (m_scan_ur) {
         bool success = m_decoder.receive_part(data.toStdString());
-        if (!success) {
-          return;
-        }
-
-    updateFrameState(FrameState::Recognized);
-
+        if (!success)
+            return;
+        updateFrameState(FrameState::Recognized);
         ui->progressBar_UR->setValue(m_decoder.estimated_percent_complete() * 100);
         ui->progressBar_UR->setMaximum(100);
-
         if (m_decoder.is_complete()) {
             m_done = true;
             m_thread->stop();
             emit finished(m_decoder.is_success());
         }
-
         return;
     }
-
     decodedString = data;
     m_done = true;
     m_thread->stop();
@@ -614,10 +606,8 @@ void ScanWidget::onDecoded(const QString &data) {
 }
 
 std::string ScanWidget::getURData() {
-    if (!m_decoder.is_success()) {
+    if (!m_decoder.is_success())
         return "";
-    }
-
     ur::ByteVector cbor = m_decoder.result_ur().cbor();
     std::string data;
     auto i = cbor.begin();
@@ -627,17 +617,14 @@ std::string ScanWidget::getURData() {
 }
 
 std::string ScanWidget::getURType() {
-    if (!m_decoder.is_success()) {
+    if (!m_decoder.is_success())
         return "";
-    }
-
     return m_decoder.expected_type().value_or("");
 }
 
 QString ScanWidget::getURError() {
-    if (!m_decoder.is_failure()) {
+    if (!m_decoder.is_failure())
         return {};
-    }
     return QString::fromStdString(m_decoder.result_error().what());
 }
 
