@@ -105,7 +105,7 @@ ScanResult QrScanThread::ReadBarcode(const QImage& img, const ZXing::DecodeHints
         }
     }
     catch (...) {
-        return Result("", false);
+        return ScanResult("", false);
     }
 }
 

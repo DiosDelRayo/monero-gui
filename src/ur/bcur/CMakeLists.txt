@@ -1,14 +1,34 @@
-add_library(ur-encoder STATIC ur-encoder.cpp)
-set_target_properties(ur-encoder PROPERTIES POSITION_INDEPENDENT_CODE ON)
-set_target_properties(ur-encoder PROPERTIES CXX_STANDARD 17)
-
-target_include_directories(ur-encoder PUBLIC 
+set(BCUR_SOURCE
+    bytewords.cpp
+    crc32.c
+    fountain-decoder.cpp
+    fountain-encoder.cpp
+    fountain-utils.cpp
+    memzero.c
+    random-sampler.cpp
+    sha2.c
+    ur.cpp
+    ur-decoder.cpp
+    ur-encoder.cpp
+    utils.cpp
+    xoshiro256.cpp)
+set(BCUR_HEADERS
+    bc-ur.hpp
+    bytewords.hpp
+    cbor-lite.hpp
+    crc32.h
+    fountain-decoder.hpp
+    fountain-encoder.hpp
+    fountain-utils.hpp
+    memzero.h
+    random-sampler.hpp
+    sha2.h
+    ur-decoder.hpp
+    ur-encoder.hpp
+    ur.hpp
+    utils.hpp
+    xoshiro256.hpp
+)
+add_library(bcur STATIC ${BCUR_SOURCE} ${BCUR_HEADERS})
+target_include_directories(bcur PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR})
-
-add_library(ur-decoder STATIC ur-decoder.cpp)
-set_target_properties(ur-decoder PROPERTIES POSITION_INDEPENDENT_CODE ON)
-set_target_properties(ur-decoder PROPERTIES CXX_STANDARD 17)
-
-target_include_directories(ur-decoder PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR})
-

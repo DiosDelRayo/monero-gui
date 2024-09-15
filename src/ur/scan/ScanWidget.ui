@@ -150,7 +150,7 @@
     <customwidget>
       <class>InfoFrame</class>
       <extends>QFrame</extends>
-      <header>components.h</header>
+      <header>InfoFrame.h</header>
       <container>1</container>
     </customwidget>
     <customwidget>

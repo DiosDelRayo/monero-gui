@@ -1,7 +1,3 @@
-project(libqrencode C)
-
-set(CMAKE_C_STANDARD 99)
-
 set(QRENCODE_SOURCES
     qrencode.c
     qrinput.c
@@ -29,3 +25,5 @@ set(QRENCODE_HEADERS
 
 add_library(qrencode STATIC ${QRENCODE_SOURCES} ${QRENCODE_HEADERS})
 target_compile_definitions(qrencode PRIVATE HAVE_CONFIG_H STATIC_IN_RELEASE=static)
+
+set_target_properties(qrencode PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)

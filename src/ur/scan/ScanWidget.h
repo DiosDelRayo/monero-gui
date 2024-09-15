@@ -10,9 +10,9 @@
 #include <QTimer>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QAbstractVideoSurface>
-#include <QCameraViewfinderSettings>
-// #include <QCameraViewfinder>
+#include <QCameraViewfinder>
+#include <QVideoProbe>
+#include <QVideoFrame>
 #else
 #include <QMediaCaptureSession>
 #include <QVideoSink>
@@ -32,7 +32,7 @@ class ScanWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ScanWidget(QWidget *parent);
+    explicit ScanWidget(QWidget *parent, bool manualExposure = false, int exposureTime = 10);
     ~ScanWidget() override;
 
     QString decodedString = "";
@@ -55,6 +55,9 @@ protected:
 
 signals:
     void finished(bool success);
+    void manualExposureEnabledChanged(bool enabled);
+    void exposureTimeChanged(int value);
+    void setManualExposure(bool enabled);
     
 private slots:
     void onCameraSwitched(int index);
@@ -72,6 +75,7 @@ private:
     QScopedPointer<QCamera> m_camera;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QScopedPointer<QCameraViewfinder> m_viewfinder;
+    QScopedPointer<QVideoProbe> m_probe;
 #else
     QMediaCaptureSession m_captureSession;
     QVideoSink m_sink;
@@ -79,7 +83,10 @@ private:
     ur::URDecoder m_decoder;
     bool m_done = false;
     bool m_handleFrames = true;
+    bool m_manualExposure = false;
+    int m_exposureTime = 10;
 
+    int m_framePadding = 14;
     int m_borderSize = 4;
     int m_totalUrFrames = 0;
     int m_currentUrFrame = 0;

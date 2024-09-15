@@ -15,10 +15,11 @@
 #include <QPermission>
 #else
 #include <QCameraInfo>
+#include <QCameraExposure>
 #endif
 
 
-ScanWidget::ScanWidget(QWidget *parent)
+ScanWidget::ScanWidget(QWidget *parent, bool manualExposure, int exposureTime)
     : QWidget(parent)
     , ui(new Ui::ScanWidget)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -30,8 +31,7 @@ ScanWidget::ScanWidget(QWidget *parent)
 {
     ui->setupUi(this);
     
-    int framePadding = 14; // Adjust this value as needed
-    ui->verticalLayout->setContentsMargins(framePadding, framePadding, framePadding, framePadding);
+    ui->verticalLayout->setContentsMargins(m_framePadding, m_framePadding, m_framePadding, m_framePadding);
 
     this->setWindowTitle("Scan QR code");
     
@@ -45,8 +45,6 @@ ScanWidget::ScanWidget(QWidget *parent)
     connect(ui->combo_camera, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ScanWidget::onCameraSwitched);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(ui->viewfinder->videoSink(), &QVideoSink::videoFrameChanged, this, &ScanWidget::handleFrameCaptured);
-#else
-    connect(ui->viewfinder, &QVideoWidget::videoFrameChanged, this, &ScanWidget::handleFrameCaptured);
 #endif
     connect(ui->btn_refresh, &QPushButton::clicked, [this]{
         this->refreshCameraList();
@@ -61,13 +59,23 @@ ScanWidget::ScanWidget(QWidget *parent)
 
         ui->slider_exposure->setVisible(enabled);
         if (enabled) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             m_camera->setExposureMode(QCamera::ExposureManual);
+#else
+            m_camera->exposure()->setExposureMode(QCameraExposure::ExposureManual);
+#endif
         } else {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             // Qt-bug: this does not work for cameras that only support V4L2_EXPOSURE_APERTURE_PRIORITY
             // Check with v4l2-ctl -L
             m_camera->setExposureMode(QCamera::ExposureAuto);
+#else
+            m_camera->exposure()->setExposureMode(QCameraExposure::ExposureAuto);
+#endif
         }
         // conf()->set(Config::cameraManualExposure, enabled);
+        m_manualExposure = enabled;
+        emit this->manualExposureEnabledChanged(enabled);
     });
 
     connect(ui->slider_exposure, &QSlider::valueChanged, [this](int value) {
@@ -76,13 +84,17 @@ ScanWidget::ScanWidget(QWidget *parent)
         }
 
         float exposure = 0.00033 * value;
-        m_camera->setExposureMode(QCamera::ExposureManual);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        m_camera->setExposureMode(QCamera::ExposureManual);
         m_camera->setManualExposureTime(exposure);
-        // conf()->set(Config::cameraExposureTime, value);
 #else
-	m_camera->exposure()->setManualAperture(exposure);
+        if(m_camera->exposure()->exposureMode() != QCameraExposure::ExposureManual)
+            m_camera->exposure()->setExposureMode(QCameraExposure::ExposureManual);
+        m_camera->exposure()->setManualAperture(exposure);
 #endif
+        // conf()->set(Config::cameraExposureTime, value);
+        m_exposureTime = value;
+        emit this->exposureTimeChanged(value);
     });
 
     ui->check_manualExposure->setVisible(false);
@@ -452,7 +464,11 @@ void ScanWidget::handleFrameCaptured(const QVideoFrame &frame) {
 
 QImage ScanWidget::videoFrameToImage(const QVideoFrame &videoFrame)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QImage image = videoFrame.toImage();
+#else
+    QImage image = videoFrame.image();
+#endif
 
     if (image.isNull()) {
         return {};
@@ -491,31 +507,53 @@ void ScanWidget::onCameraSwitched(int index) {
     m_camera.reset(new QCamera(cameras.at(index), this));
     m_captureSession.setCamera(m_camera.data());
     m_captureSession.setVideoOutput(ui->viewfinder);
+    bool manualExposureSupported = m_camera->isExposureModeSupported(QCamera::ExposureManual);
 #else
-    m_camera.reset(new QCamera(cameras.at(index)));
+    m_camera.reset(new QCamera(cameras.at(index), this));
     m_viewfinder.reset(new QCameraViewfinder());
     m_camera->setViewfinder(m_viewfinder.data());
     ui->viewfinder->setLayout(new QVBoxLayout());
     ui->viewfinder->layout()->addWidget(m_viewfinder.data());
+    bool manualExposureSupported = m_camera->exposure()->isExposureModeSupported(QCameraExposure::ExposureManual);
+
+    if(m_probe) {
+        m_probe->setSource(static_cast<QMediaObject*>(nullptr));
+        disconnect(m_probe.data(), &QVideoProbe::videoFrameProbed, this, &ScanWidget::handleFrameCaptured);
+    }
+    m_probe.reset(new QVideoProbe(this));
+    if (m_probe->setSource(static_cast<QMediaObject*>(m_camera.data()))) {
+        connect(m_probe.data(), &QVideoProbe::videoFrameProbed, this, &ScanWidget::handleFrameCaptured);
+    } else {
+        qWarning() << "Failed to set probe source";
+    }
 #endif
 
-    bool manualExposureSupported = m_camera->isExposureModeSupported(QCamera::ExposureManual);
     ui->check_manualExposure->setVisible(manualExposureSupported);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     qDebug() << "Supported camera features: " << m_camera->supportedFeatures();
     qDebug() << "Current focus mode: " << m_camera->focusMode();
     if (m_camera->isExposureModeSupported(QCamera::ExposureBarcode)) {
         qDebug() << "Barcode exposure mode is supported";
     }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(m_camera.data(), &QCamera::activeChanged, [this](bool active){
         ui->frame_error->setText("Lost connection to camera");
         ui->frame_error->setVisible(!active);
         if (!active)
                 qDebug() << "Lost connection to camera";
     });
+    connect(m_camera.data(), &QCamera::errorOccurred, [this](QCamera::Error error, const QString &errorString) {
+        if (error == QCamera::Error::CameraError) {
+            ui->frame_error->setText(QString("Error: %1").arg(errorString));
+            ui->frame_error->setVisible(true);
+            qDebug() << QString("Error: %1").arg(errorString);
+        }
+    });
 #else
+    if (m_camera->exposure()->isExposureModeSupported(QCameraExposure::ExposureBarcode)) {
+        qDebug() << "Barcode exposure mode is supported";
+    }
     connect(m_camera.data(), &QCamera::statusChanged, [this](QCamera::Status status){
         bool active = (status == QCamera::ActiveStatus);
         ui->frame_error->setText("Lost connection to camera");
@@ -524,13 +562,12 @@ void ScanWidget::onCameraSwitched(int index) {
             qDebug() << "Lost connection to camera";
     });
 #endif
-
-    connect(m_camera.data(), &QCamera::errorOccurred, [this](QCamera::Error error, const QString &errorString) {
-        if (error == QCamera::Error::CameraError) {
-            ui->frame_error->setText(QString("Error: %1").arg(errorString));
-            ui->frame_error->setVisible(true);
-            qDebug() << QString("Error: %1").arg(errorString);
-        }
+    connect(m_camera.data(), QOverload<QCamera::Error>::of(&QCamera::error), [this](QCamera::Error error) {
+        if (error != QCamera::Error::CameraError)
+            return;
+        ui->frame_error->setText(QString("Error: %1").arg(m_camera->errorString()));
+        ui->frame_error->setVisible(true);
+        qDebug() << QString("Error: %1").arg(m_camera->errorString());
     });
 
     m_camera->start();
@@ -540,7 +577,9 @@ void ScanWidget::onCameraSwitched(int index) {
     // if (useManualExposure) {
     //    ui->slider_exposure->setValue(conf()->get(Config::cameraExposureTime).toInt());
     //}
-    ui->slider_exposure->setValue(1);
+    ui->check_manualExposure->setChecked(m_manualExposure);
+    if(m_manualExposure)
+        ui->slider_exposure->setValue(m_exposureTime);
 }
 
 void ScanWidget::onDecoded(const QString &data) {
