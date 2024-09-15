@@ -1,6 +1,7 @@
-project(libqrencode)
+project(libqrencode C)
 
-# Add the qrencode source files
+set(CMAKE_C_STANDARD 99)
+
 set(QRENCODE_SOURCES
     qrencode.c
     qrinput.c
@@ -13,7 +14,6 @@ set(QRENCODE_SOURCES
     mqrspec.c
 )
 
-# Add the qrencode headers
 set(QRENCODE_HEADERS
     qrencode_inner.h
     qrencode.h

@@ -3,6 +3,7 @@
 
 #include "UrSettingsDialog.h"
 #include "ui_UrSettingsDialog.h"
+#include <QSpinBox>
 
 UrSettingsDialog::UrSettingsDialog(QWidget *parent, int fragmentLength, int speed, bool fountainCodeEnabled)
         : QDialog(parent)
@@ -15,15 +16,26 @@ UrSettingsDialog::UrSettingsDialog(QWidget *parent, int fragmentLength, int spee
     ui->setupUi(this);
 
     this->updateSettings(fragmentLength, speed, fountainCodeEnabled);
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(ui->spin_fragmentLength, &QSpinBox::valueChanged, [this](int value){
 	emit this->fragmentLengthChanged(value);
 	this->onUpdate();
     });
     connect(ui->spin_speed, &QSpinBox::valueChanged, [this](int value){
-	emit this->fragmentLengthChanged(value);
-	this->onUpdate();
+    emit this->fragmentLengthChanged(value);
+    this->onUpdate();
     });
+#else
+    connect(ui->spin_speed, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            [this](int value) {
+                emit this->speedChanged(value);
+        this->onUpdate();
+    });
+    connect(ui->spin_speed, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int value){
+        emit this->fragmentLengthChanged(value);
+        this->onUpdate();
+    });
+#endif
     connect(ui->check_fountainCode, &QCheckBox::toggled, [this](bool toggled){
 	emit this->fountainCodeEnabledChanged(toggled);
 	this->onUpdate();

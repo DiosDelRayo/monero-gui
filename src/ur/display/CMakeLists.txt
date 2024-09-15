@@ -8,7 +8,6 @@ set(URDISPLAY_SOURCES
     QrWidget.cpp
     UrWidget.cpp
     UrSettingsDialog.cpp
-    UrSettingsDialog.cpp
 )
 
 set(URDISPLAY_HEADERS
@@ -22,8 +21,18 @@ set(URDISPLAY_UI
   UrSettingsDialog.ui
 )
 
-add_library(urdisplay STATIC ${URDISPLAY_SOURCES} ${URDISPLAY_HEADERS} ${URDISPLAY_UI})
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+add_library(urdisplay STATIC 
+    ${URDISPLAY_SOURCES} 
+    ${URDISPLAY_HEADERS} 
+    ${URDISPLAY_UI}
+)
+
+target_sources(urdisplay PRIVATE ${UI_HEADERS})
+
 set_target_properties(urdisplay PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(urdisplay PROPERTIES CXX_STANDARD 17)
 
 target_include_directories(urdisplay PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(urdisplay PRIVATE Qt5::Widgets)

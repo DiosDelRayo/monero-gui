@@ -1,5 +1,3 @@
-project(libbcur)
-
 add_library(ur-encoder STATIC ur-encoder.cpp)
 set_target_properties(ur-encoder PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(ur-encoder PROPERTIES CXX_STANDARD 17)

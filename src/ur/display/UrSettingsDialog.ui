@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>UrSetingsDialog</class>
- <widget class="QDialog" name="UrSetingsDialog">
+ <class>UrSettingsDialog</class>
+ <widget class="QDialog" name="UrSettingsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -133,7 +133,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>UrSetingsDialog</receiver>
+   <receiver>UrSettingsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -149,7 +149,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>UrSetingsDialog</receiver>
+   <receiver>UrSettingsDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
