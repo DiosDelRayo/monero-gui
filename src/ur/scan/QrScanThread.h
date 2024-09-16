@@ -38,6 +38,6 @@ private:
     QWaitCondition m_waitCondition;
     QList<QImage> m_queue;
     static QString scanImage(const QImage &img);
-    static ScanResult ReadBarcode(const QImage& img, const ZXing::DecodeHints& hints = { });
+    static ScanResult ReadBarcode(const QImage& img, const ZXing::ReaderOptions& hints = { });
 };
 #endif

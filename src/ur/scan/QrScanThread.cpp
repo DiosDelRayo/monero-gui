@@ -14,7 +14,7 @@ QrScanThread::QrScanThread(QObject *parent)
 
 void QrScanThread::processQImage(const QImage &qimg)
 {
-    const auto hints = ZXing::DecodeHints()
+    const auto hints = ZXing::ReaderOptions()
             .setFormats(ZXing::BarcodeFormat::QRCode)
             .setTryHarder(true)
             .setMaxNumberOfSymbols(1);
@@ -64,7 +64,7 @@ void QrScanThread::run()
     }
 }
 
-ScanResult QrScanThread::ReadBarcode(const QImage& img, const ZXing::DecodeHints& hints)
+ScanResult QrScanThread::ReadBarcode(const QImage& img, const ZXing::ReaderOptions& hints)
 {
     auto ImgFmtFromQImg = [](const QImage& img){
         switch (img.format()) {
@@ -111,7 +111,7 @@ ScanResult QrScanThread::ReadBarcode(const QImage& img, const ZXing::DecodeHints
 
 
 QString QrScanThread::scanImage(const QImage &img) {
-    const auto hints = ZXing::DecodeHints()
+    const auto hints = ZXing::ReaderOptions()
             .setFormats(ZXing::BarcodeFormat::QRCode | ZXing::BarcodeFormat::DataMatrix)
             .setTryHarder(true)
             .setBinarizer(ZXing::Binarizer::FixedThreshold);

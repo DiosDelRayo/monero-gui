@@ -99,7 +99,7 @@ void ScanWidget::startCapture(bool scan_ur) {
     if(scan_ur)
        emit urCaptureStarted();
     else
-       emit captureStarted();
+       emit qrCaptureStarted();
     m_scan_ur = scan_ur;
     ui->progressBar_UR->setVisible(m_scan_ur);
     ui->progressBar_UR->setFormat("Progress: %v%");
@@ -307,13 +307,20 @@ void ScanWidget::onDecoded(const QString &data) {
         bool success = m_decoder.receive_part(data.toStdString());
         if (!success)
             return;
-        // updateFrameState(FrameState::Recognized); // TODO
+        emit receivedFrames(m_decoder.received_part_indexes().size());
+        emit expectedFrames(m_decoder.expected_part_count());
+        emit scannedFrames(m_decoder.received_part_indexes().size(), m_decoder.expected_part_count());
+        emit estimatedCompletedPercentage(m_decoder.estimated_percent_complete());
         ui->progressBar_UR->setValue(m_decoder.estimated_percent_complete() * 100);
         ui->progressBar_UR->setMaximum(100);
         if (m_decoder.is_complete()) {
             m_done = true;
             m_thread->stop();
             emit finished(m_decoder.is_success());
+            if(m_decoder.is_success())
+                emit urDataReceived(QString::fromStdString(getURType()), QString::fromStdString(getURData()));
+            else if(m_decoder.is_failure())
+                emit urDataFailed(getURError());
         }
         return;
     }
@@ -321,6 +328,7 @@ void ScanWidget::onDecoded(const QString &data) {
     m_done = true;
     m_thread->stop();
     emit finished(true);
+    emit qrData(data);
 }
 
 std::string ScanWidget::getURData() {

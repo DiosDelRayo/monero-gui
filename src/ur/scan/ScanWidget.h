@@ -32,7 +32,7 @@ class ScanWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ScanWidget(QWidget *parent);
+    explicit ScanWidget(QWidget *parent = nullptr);
     ~ScanWidget() override;
 
     QString decodedString = "";
@@ -47,13 +47,20 @@ public:
 
 signals:
     void finished(bool success);
+    void urDataReceived(const QString &type, const QString &data);
+    void urDataFailed(const QString &errorMsg);
+    void qrData(const QString &data);
     void manualExposureEnabledChanged(bool enabled);
     void exposureTimeChanged(int value);
     void setManualExposure(bool enabled);
     void urCaptureStarted();
-    void captureStarted();
+    void qrCaptureStarted();
     void permissionError(const QString &text);
     void cameraSwitched(int index);
+    void receivedFrames(int count);
+    void expectedFrames(int total);
+    void scannedFrames(int count, int total);
+    void estimatedCompletedPercentage(float complete);
     
 private slots:
     void onCameraSwitched(int index);
