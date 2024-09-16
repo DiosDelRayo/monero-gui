@@ -141,10 +141,8 @@
       </item>
     </layout>
     <zorder>progressBar_UR</zorder>
-    <zorder></zorder>
     <zorder>viewfinder</zorder>
     <zorder>frame_error</zorder>
-    <zorder>horizontalLayoutWidget</zorder>
   </widget>
   <customwidgets>
     <customwidget>

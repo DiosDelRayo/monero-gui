@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>componets/QrDisplayComponent.qml</file>
+        <file>componets/UrDisplayComponent.qml</file>
+        <file>componets/UrScanComponent.qml</file>
+    </qresource>
+</RCC>
