@@ -18,7 +18,7 @@
 #include <QVideoSink>
 #endif
 
-#include "QrScanThread.h"
+#include "ScanThread.h"
 
 #include <../bcur/bc-ur.hpp>
 #include <../bcur/ur-decoder.hpp>
@@ -74,7 +74,7 @@ private:
     QScopedPointer<Ui::ScanWidget> ui;
 
     bool m_scan_ur = false;
-    QrScanThread *m_thread;
+    ScanThread *m_thread;
     QScopedPointer<QCamera> m_camera;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QScopedPointer<QCameraViewfinder> m_viewfinder;

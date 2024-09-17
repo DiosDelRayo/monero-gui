@@ -11,7 +11,7 @@ find_package(ZXing REQUIRED)
 
 set(URSCAN_SOURCES
     InfoFrame.cpp
-    QrScanThread.cpp
+    ScanThread.cpp
     ScanWidget.ui
     ScanWidget.cpp
 )
@@ -19,7 +19,7 @@ set(URSCAN_SOURCES
 set(URSCAN_HEADERS
     InfoFrame.h
     ScanResult.h
-    QrScanThread.h
+    ScanThread.h
     ScanWidget.h
 )
 

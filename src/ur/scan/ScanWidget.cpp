@@ -22,7 +22,7 @@ ScanWidget::ScanWidget(QWidget *parent)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     , m_sink(new QVideoSink(this))
 #endif
-    , m_thread(new QrScanThread(this))
+    , m_thread(new ScanThread(this))
 {
     ui->setupUi(this);
     
@@ -43,7 +43,7 @@ ScanWidget::ScanWidget(QWidget *parent)
         this->refreshCameraList();
         this->onCameraSwitched(0);
     });
-    connect(m_thread, &QrScanThread::decoded, this, &ScanWidget::onDecoded);
+    connect(m_thread, &ScanThread::decoded, this, &ScanWidget::onDecoded);
 
     connect(ui->check_manualExposure, &QCheckBox::toggled, [this](bool enabled) {
         if (!m_camera) {

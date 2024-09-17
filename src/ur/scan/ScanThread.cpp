@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: 2020-2024 The Monero Project
 
-#include "QrScanThread.h"
+#include "ScanThread.h"
 #include <QDebug>
 
 #include <ZXing/ReadBarcode.h>
 
-QrScanThread::QrScanThread(QObject *parent)
+ScanThread::ScanThread(QObject *parent)
     : QThread(parent)
     , m_running(true)
 {
 }
 
-void QrScanThread::processQImage(const QImage &qimg)
+void ScanThread::processQImage(const QImage &qimg)
 {
     const auto hints = ZXing::ReaderOptions()
             .setFormats(ZXing::BarcodeFormat::QRCode)
             .setTryHarder(true)
             .setMaxNumberOfSymbols(1);
 
-    const auto result = QrScanThread::ReadBarcode(qimg, hints);
+    const auto result = ScanThread::ReadBarcode(qimg, hints);
 
     if (result.isValid()) {
         qDebug() << result.text();
@@ -27,13 +27,13 @@ void QrScanThread::processQImage(const QImage &qimg)
     }
 }
 
-void QrScanThread::stop()
+void ScanThread::stop()
 {
     m_running = false;
     m_waitCondition.wakeOne();
 }
 
-void QrScanThread::start() 
+void ScanThread::start() 
 {
     m_queue.clear();
     m_running = true;
@@ -41,7 +41,7 @@ void QrScanThread::start()
     QThread::start();
 }
 
-void QrScanThread::addImage(const QImage &img)
+void ScanThread::addImage(const QImage &img)
 {
     QMutexLocker locker(&m_mutex);
     if (m_queue.length() > 100) {
@@ -51,7 +51,7 @@ void QrScanThread::addImage(const QImage &img)
     m_waitCondition.wakeOne();
 }
 
-void QrScanThread::run()
+void ScanThread::run()
 {
     while (m_running) {
         QMutexLocker locker(&m_mutex);
@@ -64,7 +64,7 @@ void QrScanThread::run()
     }
 }
 
-ScanResult QrScanThread::ReadBarcode(const QImage& img, const ZXing::ReaderOptions& hints)
+ScanResult ScanThread::ReadBarcode(const QImage& img, const ZXing::ReaderOptions& hints)
 {
     auto ImgFmtFromQImg = [](const QImage& img){
         switch (img.format()) {
@@ -110,7 +110,7 @@ ScanResult QrScanThread::ReadBarcode(const QImage& img, const ZXing::ReaderOptio
 }
 
 
-QString QrScanThread::scanImage(const QImage &img) {
+QString ScanThread::scanImage(const QImage &img) {
     const auto hints = ZXing::ReaderOptions()
             .setFormats(ZXing::BarcodeFormat::QRCode | ZXing::BarcodeFormat::DataMatrix)
             .setTryHarder(true)
