@@ -171,7 +171,7 @@ Rectangle {
 
                 onMenuClicked: {
                     console.log("scan Qr code for view wallet")
-                    appWindow.urDisplay.state = "Display"
+                    urDisplay.state = "Display"
                     // wizardStateView.state = "wizardOpenWallet1"
                     // wizardStateView.wizardOpenWallet1View.pageRoot.forceActiveFocus();
                 }

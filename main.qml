@@ -88,6 +88,7 @@ ApplicationWindow {
     property bool isMining: false
     property int walletMode: persistentSettings.walletMode
     property var cameraUi
+    property var urDisplay
     property bool androidCloseTapped: false;
     property int userLastActive;  // epoch
     // Default daemon addresses
@@ -1340,13 +1341,15 @@ ApplicationWindow {
                 console.log("component not READY !!!");
                 appWindow.qrScannerEnabled = false;
             }
+	console.warn("Load Ur Display...");
             var urComponent = Qt.createComponent("compoment/UrCode.qml");
-            if (urComponent.status === Component.Ready) {
-                console.log("Ur Display ready");
+            if (urComponent.status == Component.Ready) {
+                console.warn("Ur Display ready");
                 urDisplay = urComponent.createObject(appWindow);
             } else {
-                console.log("UR Display component not READY !!!");
+                console.warn("UR Display component not READY !!!");
             }
+	    console.warn("UR Display component ignored?");
 
         } else console.log("qrScannerEnabled disabled");
 
