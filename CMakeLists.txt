@@ -82,6 +82,7 @@ message(STATUS "${CMAKE_MODULE_PATH}")
 
 if(WITH_SCANNER)
     add_definitions(-DWITH_SCANNER)
+	add_definitions(-DUROTS_WITH_QTQUICK)
 endif()
 
 if(WITH_DESKTOP_ENTRY)

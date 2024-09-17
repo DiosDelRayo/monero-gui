@@ -1340,6 +1340,14 @@ ApplicationWindow {
                 console.log("component not READY !!!");
                 appWindow.qrScannerEnabled = false;
             }
+            var urComponent = Qt.createComponent("compoment/UrCode.qml");
+            if (urComponent.status === Component.Ready) {
+                console.log("Ur Display ready");
+                urDisplay = urComponent.createObject(appWindow);
+            } else {
+                console.log("UR Display component not READY !!!");
+            }
+
         } else console.log("qrScannerEnabled disabled");
 
         if(!walletsFound()) {

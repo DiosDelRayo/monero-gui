@@ -170,8 +170,10 @@ Rectangle {
                 imageIcon: "qrc:///images/restore-wallet-from-qr.png"
 
                 onMenuClicked: {
-                    wizardStateView.state = "wizardOpenWallet1"
-                    wizardStateView.wizardOpenWallet1View.pageRoot.forceActiveFocus();
+                    console.log("scan Qr code for view wallet")
+                    appWindow.urDisplay.state = "Display"
+                    // wizardStateView.state = "wizardOpenWallet1"
+                    // wizardStateView.wizardOpenWallet1View.pageRoot.forceActiveFocus();
                 }
             }
 

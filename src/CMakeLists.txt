@@ -106,6 +106,7 @@ target_include_directories(monero-wallet-gui PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/libwalletqt
 	${CMAKE_CURRENT_SOURCE_DIR}/model
 	${CMAKE_CURRENT_SOURCE_DIR}/QR-Code-scanner
+	${CMAKE_CURRENT_SOURCE_DIR}/ur/qtquick
 	${CMAKE_CURRENT_SOURCE_DIR}/zxcvbn-c
     ${X11_INCLUDE_DIR}
 )
@@ -146,7 +147,7 @@ if(X11_FOUND)
 endif()
 
 if(WITH_SCANNER)
-    target_link_libraries(monero-wallet-gui qrscanner)
+    target_link_libraries(monero-wallet-gui qrscanner urregister)
     if(LINUX AND NOT ANDROID)
         target_link_libraries(monero-wallet-gui
             jpeg

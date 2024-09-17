@@ -27,7 +27,9 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import QtQuick 2.9
-import UrOts.QrScanner 0.1
+import QtMultimedia 5.4
+import QtQuick.Dialogs 1.2
+import moneroComponents.QRCodeScanner 1.0
 
 Rectangle {
     id : root
@@ -135,6 +137,7 @@ Rectangle {
             }
             onDoubleClicked: {
                 root.state = "Stopped"
+                console.warn("onDoubleClicked")
             }
         }
     }

@@ -19,4 +19,9 @@ target_link_libraries(urregister PUBLIC
     Qt::Gui
     Qt::Widgets
     Qt::MultimediaWidgets
+    urdisplay
+    urscan
+    qrcode
+    bcur
+    qrencode
 )
