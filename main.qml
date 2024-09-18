@@ -1342,7 +1342,7 @@ ApplicationWindow {
                 appWindow.qrScannerEnabled = false;
             }
 	console.warn("Load Ur Display...");
-            var urComponent = Qt.createComponent("compoment/UrCode.qml");
+            var urComponent = Qt.createComponent("components/UrCode.qml");
             if (urComponent.status == Component.Ready) {
                 console.warn("Ur Display ready");
                 urDisplay = urComponent.createObject(appWindow);
