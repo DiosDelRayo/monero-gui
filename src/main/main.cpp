@@ -89,7 +89,10 @@
 
 #ifdef WITH_SCANNER
 #include "QR-Code-scanner/QrCodeScanner.h"
-#include "ur/qtquick/UrRegister.h"
+#endif
+
+#ifdef WITH_OTS_UR
+#include "otsur/qtquick/UrRegister.h"
 #endif
 
 #ifdef MONERO_GUI_STATIC
@@ -444,7 +447,10 @@ Verify update binary using 'shasum'-compatible (SHA256 algo) output signed by tw
 #ifdef WITH_SCANNER
     qmlRegisterType<QrCodeScanner>("moneroComponents.QRCodeScanner", 1, 0, "QRCodeScanner");
     // TODO: 2024-09-13 add UR Scanner and UR Code
-	UrRegister::registerTypes();
+#endif
+
+#ifdef WITH_OTS_UR
+    OtsUr::registerTypes();
 #endif
 
     QQmlApplicationEngine engine;
@@ -525,6 +531,14 @@ Verify update binary using 'shasum'-compatible (SHA256 algo) output signed by tw
     builtWithScanner = true;
 #endif
     engine.rootContext()->setContextProperty("builtWithScanner", builtWithScanner);
+
+    bool builtWithOtsUr = false;
+#ifdef WITH_OTS_UR
+    builtWithOtsUr = true;
+    OtsUr::setupContext(engine);
+
+#endif
+    engine.rootContext()->setContextProperty("builtWithOtsUr", builtWithOtsUr);
 
     bool builtWithDesktopEntry = false;
 #ifdef WITH_DESKTOP_ENTRY

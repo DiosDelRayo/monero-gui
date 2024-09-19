@@ -1,7 +1,4 @@
 add_subdirectory(QR-Code-scanner)
-if(WITH_SCANNER)
-    add_subdirectory(ur)
-endif()
 add_subdirectory(openpgp)
 add_subdirectory(zxcvbn-c)
 
@@ -147,7 +144,7 @@ if(X11_FOUND)
 endif()
 
 if(WITH_SCANNER)
-    target_link_libraries(monero-wallet-gui qrscanner urregister)
+    target_link_libraries(monero-wallet-gui qrscanner)
     if(LINUX AND NOT ANDROID)
         target_link_libraries(monero-wallet-gui
             jpeg
@@ -156,6 +153,11 @@ if(WITH_SCANNER)
             rt
         )
     endif()
+endif()
+
+if(WITH_OTS_UR)
+    add_subdirectory(otsur)
+    target_link_libraries(monero-wallet-gui urdisplay urscan urregister)
 endif()
 
 add_custom_command(TARGET monero-wallet-gui POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:daemon> $<TARGET_FILE_DIR:monero-wallet-gui>)

@@ -1341,15 +1341,12 @@ ApplicationWindow {
                 console.log("component not READY !!!");
                 appWindow.qrScannerEnabled = false;
             }
-	console.warn("Load Ur Display...");
             var urComponent = Qt.createComponent("components/UrCode.qml");
             if (urComponent.status == Component.Ready) {
-                console.warn("Ur Display ready");
                 urDisplay = urComponent.createObject(appWindow);
             } else {
                 console.warn("UR Display component not READY !!!");
             }
-	    console.warn("UR Display component ignored?");
 
         } else console.log("qrScannerEnabled disabled");
 
