@@ -170,10 +170,10 @@ Rectangle {
                 imageIcon: "qrc:///images/restore-wallet-from-qr.png"
 
                 onMenuClicked: {
-                    console.log("scan Qr code for view wallet")
-                    urDisplay.state = "Display"
-                    // wizardStateView.state = "wizardOpenWallet1"
-                    // wizardStateView.wizardOpenWallet1View.pageRoot.forceActiveFocus();
+                    cameraUi.walletMode = cameraUi.walletModes.ViewOnly
+                    cameraUi.qrCodeFormat = cameraUi.qrCodeFormats.Both
+                    cameraUi.mode = cameraUi.modes.Wallet
+                    cameraUi.viewWallet.connect(wizardHome.onViewWalletFromQr)
                 }
             }
 
@@ -272,6 +272,13 @@ Rectangle {
             duration: 200;
             easing.type: Easing.InCubic;
         }
+    }
+
+    function onViewWalletFromQr(address, viewKey, spendKey, height) {
+        console.warn("onViewWallet: " + address + " viewKey: " + viewKey)
+        wizardController.restart();
+        wizardStateView.state = "wizardRestoreWallet1"
+        cameraUi.viewWallet.disconnect(onViewWalletFromQr)
     }
 
     function onPageCompleted(){

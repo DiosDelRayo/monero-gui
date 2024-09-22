@@ -44,12 +44,6 @@ Rectangle {
     visible: false
     color: "black"
     state: "Stopped"
-    Shortcut {
-        sequence: StandardKey.Cancel  // This includes the Escape key
-        onActivated: {
-            root.state = "Stopped"
-        }
-    }
 
     signal qrcode_decoded(string address, string payment_id, string amount, string tx_description, string recipient_name, var extra_parameters)
 
@@ -59,7 +53,6 @@ Rectangle {
             StateChangeScript {
                 script: {
                     root.visible = true
-                    camera.deviceId = QtMultimedia.availableCameras[1].deviceId // TODO: remove and add camera switcher
                     camera.captureMode = Camera.CaptureStillImage
                     camera.cameraState = Camera.ActiveState
                     camera.start()

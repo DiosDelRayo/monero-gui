@@ -81,7 +81,7 @@ include(VersionGui)
 
 message(STATUS "${CMAKE_MODULE_PATH}")
 
-if(WITH_SCANNER)
+if(WITH_SCANNER AND NOT WITH_OTS_UR)
     add_definitions(-DWITH_SCANNER)
 endif()
 if(WITH_OTS_UR)
@@ -128,7 +128,7 @@ set(QT5_LIBRARIES
   Qt5Xml
 )
 
-if(WITH_SCANNER)
+if(WITH_SCANNER OR OTS_UR_WITH_QTQUICK)
   list(APPEND QT5_LIBRARIES Qt5Multimedia)
 endif()
 
@@ -247,7 +247,7 @@ if(STATIC)
     modelsplugin
   )
 
-  if(WITH_SCANNER)
+  if(WITH_SCANNER OR OTS_UR_WITH_QTQUICK)
     list(APPEND QT5_EXTRA_LIBRARIES_LIST
       declarative_multimedia
       Qt5MultimediaQuick

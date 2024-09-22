@@ -68,9 +68,9 @@ Rectangle {
 
         MoneroComponents.CheckBox {
             id: useUrCheckBox
-            visible: builtWithScanner
-            enabled: builtWithScanner
-            checked: persistentSettings.useURCode && builtWithScanner
+            visible: builtWithOtsUr
+            enabled: builtWithOtsUr
+            checked: persistentSettings.useURCode && builtWithOtsUr
             onClicked: persistentSettings.useURCode = !persistentSettings.useURCode
             text: qsTr("Use UR Code instead of files for cold wallet") + translationManager.emptyString
         }

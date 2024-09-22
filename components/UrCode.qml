@@ -1,7 +1,7 @@
 import QtQuick 2.9
 import QtMultimedia 5.4
 import OtsUr 0.1
-import "../components" as MoneroComponents
+import "." as MoneroComponents
 
 Rectangle {
     id : root
@@ -15,19 +15,11 @@ Rectangle {
     visible: false
     color: "black"
     state: "Stopped"
-    Shortcut {
-        sequence: StandardKey.Cancel  // This includes the Escape key
-        onActivated: {
-            console.warn('ESC')
-            root.state = "Stopped"
-        }
-    }
     states: [
         State {
             name: "Display"
             StateChangeScript {
                 script: {
-                    console.warn('Display')
                     root.visible = true
                     root.focus = true
                 }
@@ -37,7 +29,6 @@ Rectangle {
             name: "Stopped"
             StateChangeScript {
                 script: {
-                    console.warn('Stopped')
                     root.visible = false
                     root.focus = false
                 }
@@ -45,11 +36,6 @@ Rectangle {
         }
     ]
 
-    /*
-    function setData(urtype, data) {
-        urSender.setData(urtype, data)
-    }
-    */
     Image {
         id: qrCodeImage
         cache: false
@@ -70,7 +56,6 @@ Rectangle {
         anchors.top: qrCodeImage.bottom
         anchors.topMargin: 10
         anchors.horizontalCenter: qrCodeImage.horizontalCenter
-        verticalAlignment: verticalCenter
         color: "white"
     }
 
@@ -99,11 +84,12 @@ Rectangle {
         }
     }
 
-    // Component.onStatusChanged: function(status) { console.log("status changed: " + status) }
+    function setData(string type, string data) {
+	urSender.setData(type, data)
+    }
+
     Component.onCompleted: {
-        //urSender.setData("test-test", "testfsgregerhrekhmerwkhnwerklgnlwkengklwenhlekwnhwelrknhklrnhklernhklrenhlkernhklrenhklernhklerhnklerhnrkenh")
         urSender.onSettingsChanged(150, 80, true)
-        urSender.test()
         qrCodeImage.source = "image://urcode/qr"
     }
 }

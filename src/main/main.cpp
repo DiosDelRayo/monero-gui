@@ -87,12 +87,11 @@
 #include "qt/macoshelper.h"
 #endif
 
-#ifdef WITH_SCANNER
-#include "QR-Code-scanner/QrCodeScanner.h"
-#endif
-
 #ifdef WITH_OTS_UR
 #include "otsur/qtquick/UrRegister.h"
+// use scanner only if OTS UR is not used, how OTS UR can provide QR Scan, too.
+#elif WITH_SCANNER
+#include "QR-Code-scanner/QrCodeScanner.h"
 #endif
 
 #ifdef MONERO_GUI_STATIC
@@ -444,13 +443,10 @@ Verify update binary using 'shasum'-compatible (SHA256 algo) output signed by tw
     qRegisterMetaType<NetworkType::Type>();
     qmlRegisterType<NetworkType>("moneroComponents.NetworkType", 1, 0, "NetworkType");
 
-#ifdef WITH_SCANNER
-    qmlRegisterType<QrCodeScanner>("moneroComponents.QRCodeScanner", 1, 0, "QRCodeScanner");
-    // TODO: 2024-09-13 add UR Scanner and UR Code
-#endif
-
 #ifdef WITH_OTS_UR
     OtsUr::registerTypes();
+#elif WITH_SCANNER
+    qmlRegisterType<QrCodeScanner>("moneroComponents.QRCodeScanner", 1, 0, "QRCodeScanner");
 #endif
 
     QQmlApplicationEngine engine;
@@ -527,17 +523,14 @@ Verify update binary using 'shasum'-compatible (SHA256 algo) output signed by tw
     engine.rootContext()->setContextProperty("socksProxyFlagSet", parser.isSet(socksProxyOption));
 
     bool builtWithScanner = false;
-#ifdef WITH_SCANNER
-    builtWithScanner = true;
-#endif
-    engine.rootContext()->setContextProperty("builtWithScanner", builtWithScanner);
-
     bool builtWithOtsUr = false;
 #ifdef WITH_OTS_UR
     builtWithOtsUr = true;
     OtsUr::setupContext(engine);
-
+#elif WITH_SCANNER
+    builtWithScanner = true;
 #endif
+    engine.rootContext()->setContextProperty("builtWithScanner", builtWithScanner);
     engine.rootContext()->setContextProperty("builtWithOtsUr", builtWithOtsUr);
 
     bool builtWithDesktopEntry = false;
@@ -566,7 +559,9 @@ Verify update binary using 'shasum'-compatible (SHA256 algo) output signed by tw
     if (parser.isSet(testQmlOption))
         return 0;
 
-#ifdef WITH_SCANNER
+#if WITH_OTS_UR
+    OtsUr::setupCamera(engine);
+#elif WITH_SCANNER
     QObject *qmlCamera = rootObject->findChild<QObject*>("qrCameraQML");
     if (qmlCamera)
     {

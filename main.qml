@@ -82,7 +82,7 @@ ApplicationWindow {
     property string walletName
     property bool viewOnly: false
     property bool foundNewBlock: false
-    property bool qrScannerEnabled: (typeof builtWithScanner != "undefined") && builtWithScanner
+    property bool qrScannerEnabled: ((typeof builtWithScanner != "undefined") && builtWithScanner) || ((typeof builtWithOtsUr != "undefined") && builtWithOtsUr)
     property int blocksToSync: 1
     property int firstBlockSeen
     property bool isMining: false
@@ -1331,7 +1331,7 @@ ApplicationWindow {
         // Connect app exit to qml window exit handling
         mainApp.closing.connect(appWindow.close);
 
-        if( appWindow.qrScannerEnabled ){
+        if(builtWithScanner && appWindow.qrScannerEnabled){
             console.log("qrScannerEnabled : load component QRCodeScanner");
             var component = Qt.createComponent("components/QRCodeScanner.qml");
             if (component.status == Component.Ready) {
@@ -1341,14 +1341,26 @@ ApplicationWindow {
                 console.log("component not READY !!!");
                 appWindow.qrScannerEnabled = false;
             }
+        }
+
+        if(builtWithOtsUr && appWindow.qrScannerEnabled){
+            var urScanComponent = Qt.createComponent("components/UrCodeScanner.qml");
+            console.warn(urScanComponent.errorString())
+            if (urScanComponent.status == Component.Ready) {
+                cameraUi = urScanComponent.createObject(appWindow);
+            } else {
+                console.warn("UR Scanner component not READY !!!");
+            }
+        }
+
+        if(builtWithOtsUr) {
             var urComponent = Qt.createComponent("components/UrCode.qml");
             if (urComponent.status == Component.Ready) {
                 urDisplay = urComponent.createObject(appWindow);
             } else {
                 console.warn("UR Display component not READY !!!");
             }
-
-        } else console.log("qrScannerEnabled disabled");
+        }
 
         if(!walletsFound()) {
             wizard.wizardState = "wizardLanguage";
