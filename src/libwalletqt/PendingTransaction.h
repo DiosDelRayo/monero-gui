@@ -70,6 +70,7 @@ public:
     Status status() const;
     QString errorString() const;
     Q_INVOKABLE bool commit();
+    Q_INVOKABLE QString commitAsString() const;
     quint64 amount() const;
     quint64 dust() const;
     quint64 fee() const;
