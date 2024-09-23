@@ -982,7 +982,25 @@ Rectangle {
             button3.enabled: appWindow.viewOnly
             button3.onClicked: {
                 console.log("Transfer: submit tx clicked")
-                submitTxDialog.open();
+                if(persistentSettings.useURCode) {
+                    /*
+                    if(!currentWallet.submitTxFile(walletManager.urlToLocalPath(fileUrl))){
+                        informationPopup.title = qsTr("Error") + translationManager.emptyString;
+                        informationPopup.text  = qsTr("Can't submit transaction: ") + currentWallet.errorString
+                        informationPopup.icon  = StandardIcon.Critical
+                        informationPopup.onCloseCallback = null
+                        informationPopup.open();
+                    } else {
+                        informationPopup.title = qsTr("Information") + translationManager.emptyString
+                        informationPopup.text  = qsTr("Monero sent successfully") + translationManager.emptyString
+                        informationPopup.icon  = StandardIcon.Information
+                        informationPopup.onCloseCallback = null
+                        informationPopup.open();
+                    }
+                    */
+                } else {
+                    submitTxDialog.open();
+                }
             }
             tooltip: {
                 var errorMessage = "";
