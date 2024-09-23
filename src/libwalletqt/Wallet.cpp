@@ -506,13 +506,26 @@ bool Wallet::exportKeyImages(const QString& path, bool all)
     return m_walletImpl->exportKeyImages(path.toStdString(), all);
 }
 
-bool Wallet::importKeyImages(const QString& path)
+QString Wallet::exportKeyImagesAsString(bool all)
 {
-    return m_walletImpl->importKeyImages(path.toStdString());
+    return QString::fromStdString(m_walletImpl->exportKeyImagesAsString(all));
+}
+
+bool Wallet::importKeyImagesFromString(const QString& data)
+{
+    return m_walletImpl->importKeyImagesFromString(data.toStdString());
+}
+
+QString Wallet::exportOutputsAsString(bool all) const {
+    return QString::fromStdString(m_walletImpl->exportOutputsAsString(all));
 }
 
 bool Wallet::exportOutputs(const QString& path, bool all) {
     return m_walletImpl->exportOutputs(path.toStdString(), all);
+}
+
+bool Wallet::importOutputsFromString(const QString& data) {
+    return m_walletImpl->importOutputsFromString(data.toStdString());
 }
 
 bool Wallet::importOutputs(const QString& path) {

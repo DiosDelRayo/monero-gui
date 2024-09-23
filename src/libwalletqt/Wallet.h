@@ -205,10 +205,14 @@ public:
     Q_INVOKABLE void refreshHeightAsync();
 
     //! export/import key images
+    Q_INVOKABLE QString exportKeyImagesAsString(bool all = false);
+    Q_INVOKABLE bool importKeyImagesFromString(const QString& data);
     Q_INVOKABLE bool exportKeyImages(const QString& path, bool all = false);
     Q_INVOKABLE bool importKeyImages(const QString& path);
 
     //! export/import outputs
+    Q_INVOKABLE QString exportOutputsAsString(bool all = false) const;
+    Q_INVOKABLE bool importOutputsFromString(const QString& data);
     Q_INVOKABLE bool exportOutputs(const QString& path, bool all = false);
     Q_INVOKABLE bool importOutputs(const QString& path);
 

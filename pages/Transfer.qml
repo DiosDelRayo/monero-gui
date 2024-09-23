@@ -300,8 +300,14 @@ Rectangle {
                             visible: appWindow.qrScannerEnabled
                             tooltip: qsTr("Scan QR code") + translationManager.emptyString
                             onClicked: {
-                                cameraUi.state = "Capture"
-                                cameraUi.qrcode_decoded.connect(updateFromQrCode)
+                                if(builtWithOtsUr) {
+                                    cameraUi.address.connect(root.)
+                                    cameraUi.mode = cameraUi.modes.Address
+
+                                } else {
+                                    cameraUi.state = "Capture"
+                                    cameraUi.qrcode_decoded.connect(updateFromQrCode)
+                                }
                             }
                         }
 
@@ -881,13 +887,25 @@ Rectangle {
             button1.enabled: appWindow.viewOnly
             button1.onClicked: {
                 console.log("Transfer: export outputs clicked")
-                exportOutputsDialog.open();
+                if(persistentSettings.useURCode) {
+                    var outputs = currentWallet.exportOutputsAsString(true);
+                    urSender.sendOutputs(outputs)
+                    urDisplay.state = "Display"
+                } else {
+                    exportOutputsDialog.open();
+                }
             }
             button2.text: qsTr("Import") + translationManager.emptyString
             button2.enabled: !appWindow.viewOnly
             button2.onClicked: {
                 console.log("Transfer: import outputs clicked")
-                importOutputsDialog.open();
+                if(persistentSettings.useURCode) {
+                    cameraUi.outputs.connect(root.importOutputs)
+                    cameraUi.canceled.connect(root.scanCanceled)
+                    cameraUi.mode = cameraUi.modes.Outputs
+                } else {
+                    importOutputsDialog.open();
+                }
             }
             tooltip: {
                 var header = qsTr("Required for cold wallets to sign their corresponding key images") + translationManager.emptyString;
@@ -907,13 +925,25 @@ Rectangle {
             button1.enabled: !appWindow.viewOnly
             button1.onClicked: {
                 console.log("Transfer: export key images clicked")
-                exportKeyImagesDialog.open();
+                if(persistentSettings.useURCode) {
+                    var keyImages = currentWallet.exportKeyImagesAsString(true);
+                    urSender.sendKeyImages(keyImages)
+                    urDisplay.state = "Display"
+                } else {
+                    exportKeyImagesDialog.open();
+                }
             }
             button2.text: qsTr("Import") + translationManager.emptyString
             button2.enabled: appWindow.viewOnly && appWindow.isTrustedDaemon()
             button2.onClicked: {
                 console.log("Transfer: import key images clicked")
-                importKeyImagesDialog.open(); 
+                if(persistentSettings.useURCode) {
+                    cameraUi.keyImages.connect(root.importKeyImages)
+                    cameraUi.canceled.connect(root.scanCanceled)
+                    cameraUi.mode = cameraUi.modes.KeyImages
+                } else {
+                    importKeyImagesDialog.open();
+                }
             }
             tooltip: {
                 var errorMessage = "";
@@ -1188,5 +1218,31 @@ Rectangle {
         middlePanel.state = 'Transfer';
 
         fillPaymentDetails(address, paymentId, amount, description);
+    }
+
+    function addressFromScanner(address, payment_id, recipient_name, amount, description) {
+        disconnectCameraUi()
+        middlePanel.state = 'Transfer';
+        fillPaymentDetails(address, payment_id, amount, description);
+    }
+
+    function importOutputs(outputs) {
+        disconnectCameraUi()
+        currentWallet.importOutputsFromString(outputs);
+    }
+
+    function importKeyImages(keyImages) {
+        disconnectCameraUi()
+        currentWallet.importKeyImagesFromString(keyImages);
+    }
+
+    function scanCanceled() {
+        disconnectCameraUi()
+    }
+
+    function disconnectCameraUi() {
+        cameraUi.outputs.disconnect(root.importOutputs)
+        cameraUi.canceled.disconnect(root.scanCanceled)
+        cameraUi.keyImages.disconnect(root.importKeyImages)
     }
 }

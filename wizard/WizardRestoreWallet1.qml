@@ -152,8 +152,10 @@ Rectangle {
                         seedRadioButton.checked = false;
                         keysRadioButton.checked = false;
                         wizardController.walletRestoreMode = 'qr';
-                        cameraUi.state = "Capture";
-                        cameraUi.qrcode_decoded.connect(Wizard.updateFromQrCode);
+                        cameraUi.wallet.connect(wizardRestoreWallet1.onWallet);
+                        cameraUi.canceled.connect(wizardRestoreWallet1.onScanCancel);
+                        cameraUi.walletMode = cameraUi.walletModes.Both
+                        cameraUi.mode = cameraUi.modes.Wallet
                     }
                 }
             }
@@ -324,6 +326,26 @@ Rectangle {
                 }
             }
         }
+    }
+
+    disconnectScanner() {
+        cameraUi.wallet.disconnect(onWallet)
+        cameraUi.canceled.disconnect(onScanCancel)
+    }
+
+    function onScanCancel() {
+	disconnectScanner()
+    }
+
+    function onWallet(address, viewKey, spendKey, height) {
+	disconnectScanner()
+	addressLine.text = address
+	keysRadioButton.clicked()
+	viewKeyLine.text = viewKey
+	spendKeyLine.text = spendKey
+	restoreHeight.text = height
+	cameraUi.wallet.disconnect(onWallet)
+	cameraUi.canceled.disconnect(onScanCancel)
     }
 
     function onPageCompleted(previousView){

@@ -274,11 +274,20 @@ Rectangle {
         }
     }
 
-    function onViewWalletFromQr(address, viewKey, spendKey, height) {
-        console.warn("onViewWallet: " + address + " viewKey: " + viewKey)
+    function onViewWalletFromQr(address, viewKey, height) {
+	disconnectScanner();
         wizardController.restart();
         wizardStateView.state = "wizardRestoreWallet1"
-        cameraUi.viewWallet.disconnect(onViewWalletFromQr)
+        wizardStateView.wizardRestoreWallet1View.onViewWallet(address, viewKey, height)
+    }
+
+    function onViewWalletScanAbort() {
+	disconnectScanner();
+    }
+
+    function disconnectScanner() {
+        cameraUi.viewWallet.disconnect(wizardHome.onViewWalletFromQr)
+        cameraUi.canceled.disconnect(wizardHome.onViewWalletScanAbort)
     }
 
     function onPageCompleted(){

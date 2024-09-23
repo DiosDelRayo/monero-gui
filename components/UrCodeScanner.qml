@@ -60,11 +60,11 @@ Rectangle {
 
     signal qrcode_decoded(string address, string payment_id, string amount, string tx_description, string recipient_name, var extra_parameters)
     signal canceled()
-    signal qcode(string data)
-    signal wallet(string address, string viewKey, string spendKey, int height)
-    signal viewWallet(string address, string viewKey, string spendKey, int height)
+    signal qrCode(string data)
+    signal wallet(string address, string spendKey, string viewKey, int height)
+    signal viewWallet(string address, string viewKey, int height)
     signal transaction(string tx, int txFormat)
-    signal address(string address, string payment_id, string amount, string recipient_name)
+    signal address(string address, string payment_id, string recipient_name, string amount, string description)
     signal keyImages(string keyImages)
     signal outputs(string outputs)
 
@@ -123,10 +123,63 @@ Rectangle {
         objectName: "urScanner"
         onQrDataReceived: function(data) {
             console.warn("onQrDataReceived: " + data)
-            root.viewWallet("afqwqwgeqgqeqwe", "wfwqfqwgwqgqgqe", "qwfwqfwqgqwgqegqeg", 1314)
-            // root.qrcode_decoded(data, "", "", "", "", null)
-            //root.state = "Stopped"
+            if(!root.mode in [ root.modes.QrCode, root.modes.Wallet, root.modes.Address ]) {
+                urScanner.reset()
+                return
+            }
+            switch(root.mode) {
+            case root.modes.Wallet:
+                var w = MoneroUri.parseWalletDataUri(data)
+                if(!w) {
+                   root.cancel()
+                    return
+                }
+                if(root.walletMode in [root.walletModes.Both, root.walletModes.Full])
+                    root.wallet(w.address, w.spendKet, w.viewKey, w.height)
+                if(root.walletMode in [root.walletModes.Both, root.walletModes.ViewOnly])
+                    root.viewWallet(w.address, w.viewKey, w.height)
+                break
+            case root.modes.Address:
+                var t = MoneroUri.parseTxDataUri(data)
+                if(!t) {
+                   root.cancel()
+                    return
+                }
+                root.address(t.address, t.paymentId, t.recipientName, t.amount, t.description)
+                break
+            case root.modes.QrCode:
+                root.qrCode(data)
+                break
+            default:
+                root.cancel()
+                return
+            }
             root.mode = root.modes.None
+        }
+
+        onUrDataReceived: function(type, data) {
+            if(!root.mode in [ root.modes.Outputs, root.modes.KeyImages, root.modes.Transaction ]) {
+                root.cancel() // should never happen
+                return
+            }
+            switch(root.mode) {
+            case root.modes.Outputs:
+                break
+            case root.modes.KeyImages:
+                break
+            case root.modes.Transaction:
+                break
+            default:
+                root.cancel()
+                return
+            }
+            root.mode = root.modes.None
+        }
+
+        onUrDataFailed: function(error) {
+            if(!root.mode in [ root.modes.Outputs, root.modes.KeyImages, root.modes.Transaction ])
+                return // should never happen
+            root.cancel()
         }
     }
 
@@ -227,15 +280,6 @@ Rectangle {
         anchors.bottomMargin: 20
         anchors.topMargin: 20
         onClicked: root.cancel()
-    }
-
-    MessageDialog {
-        id: messageDialog1
-        title: qsTr("QrCode Scanned")  + translationManager.emptyString
-        onAccepted: {
-            //root.state = "Stopped"
-            root.mode = root.modes.None
-        }
     }
 
     function cancel() {

@@ -51,11 +51,12 @@ Rectangle {
 
     Text {
         id: textFrameInfo
-        width: 150
+        visible: urSender.isUrCode
+        width: 50
         text: urSender.currentFrameInfo
         anchors.top: qrCodeImage.bottom
         anchors.topMargin: 10
-        anchors.horizontalCenter: qrCodeImage.horizontalCenter
+        anchors.right: qrCodeImage.right
         color: "white"
     }
 
@@ -84,12 +85,11 @@ Rectangle {
         }
     }
 
-    function setData(string type, string data) {
-	urSender.setData(type, data)
+    function setData(type, data) {
+        urSender.setData(type, data)
     }
 
     Component.onCompleted: {
-        urSender.onSettingsChanged(150, 80, true)
         qrCodeImage.source = "image://urcode/qr"
     }
 }
