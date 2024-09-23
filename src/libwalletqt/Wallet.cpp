@@ -663,6 +663,14 @@ UnsignedTransaction * Wallet::loadTxFile(const QString &fileName)
     return result;
 }
 
+UnsignedTransaction * Wallet::loadTxString(const QString &data)
+{
+    qDebug() << "Trying to sign";
+    Monero::UnsignedTransaction * ptImpl = m_walletImpl->loadUnsignedTxFromString(data.toStdString());
+    UnsignedTransaction * result = new UnsignedTransaction(ptImpl, m_walletImpl, this);
+    return result;
+}
+
 bool Wallet::submitTxFile(const QString &fileName) const
 {
     qDebug() << "Trying to submit " << fileName;
@@ -670,6 +678,12 @@ bool Wallet::submitTxFile(const QString &fileName) const
         return false;
     // import key images
     return m_walletImpl->importKeyImages(fileName.toStdString() + "_keyImages");
+}
+
+bool Wallet::submitTxString(const QString &data) const
+{
+    qDebug() << "Trying to submit";
+    return m_walletImpl->submitTransactionFromString(data.toStdString()); // TODO: Why importing key images? This had should be done before... (remove this comment after clarification)
 }
 
 void Wallet::commitTransactionAsync(PendingTransaction *t)

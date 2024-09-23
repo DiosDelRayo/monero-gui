@@ -249,9 +249,11 @@ public:
     Q_INVOKABLE void createSweepUnmixableTransactionAsync();
 
     //! Sign a transfer from file
+    Q_INVOKABLE UnsignedTransaction * loadTxString(const QString &data);
     Q_INVOKABLE UnsignedTransaction * loadTxFile(const QString &fileName);
 
     //! Submit a transfer from file
+    Q_INVOKABLE bool submitTxString(const QString &data) const;
     Q_INVOKABLE bool submitTxFile(const QString &fileName) const;
 
     //! asynchronous transaction commit
