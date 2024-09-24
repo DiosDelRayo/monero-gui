@@ -511,6 +511,11 @@ QString Wallet::exportKeyImagesAsString(bool all)
     return QString::fromStdString(m_walletImpl->exportKeyImagesAsString(all));
 }
 
+bool Wallet::importKeyImages(const QString& path)
+{
+    return m_walletImpl->importKeyImages(path.toStdString());
+}
+
 bool Wallet::importKeyImagesFromString(const QString& data)
 {
     return m_walletImpl->importKeyImagesFromString(data.toStdString());
