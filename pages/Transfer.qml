@@ -977,28 +977,24 @@ Rectangle {
             button2.enabled: !appWindow.viewOnly
             button2.onClicked: {
                 console.log("Transfer: sign tx clicked")
-                signTxDialog.open();
+                if(persistentSettings.useURCode) {
+                    cameraUi.canceled.connect(root.scanCanceled())
+                    cameraUi.transaction.connect(root.signTx)
+                    cameraUi.transactionFormat = cameraUi.transactionFormats.Unsigned
+                    cameraUi.mode = cameraUi.modes.Transaction
+                } else {
+                    signTxDialog.open();
+                }
             }
             button3.text: qsTr("Submit") + translationManager.emptyString
             button3.enabled: appWindow.viewOnly
             button3.onClicked: {
                 console.log("Transfer: submit tx clicked")
                 if(persistentSettings.useURCode) {
-                    /*
-                    if(!currentWallet.submitTxFile(walletManager.urlToLocalPath(fileUrl))){
-                        informationPopup.title = qsTr("Error") + translationManager.emptyString;
-                        informationPopup.text  = qsTr("Can't submit transaction: ") + currentWallet.errorString
-                        informationPopup.icon  = StandardIcon.Critical
-                        informationPopup.onCloseCallback = null
-                        informationPopup.open();
-                    } else {
-                        informationPopup.title = qsTr("Information") + translationManager.emptyString
-                        informationPopup.text  = qsTr("Monero sent successfully") + translationManager.emptyString
-                        informationPopup.icon  = StandardIcon.Information
-                        informationPopup.onCloseCallback = null
-                        informationPopup.open();
-                    }
-                    */
+                    cameraUi.canceled.connect(root.scanCanceled)
+                    cameraUi.transaction.connect(root.submitTx)
+                    cameraUi.transactionFormat = cameraUi.transactionFormats.Signed
+                    cameraUi.mode = cameraUi.modes.Transaction
                 } else {
                     submitTxDialog.open();
                 }
@@ -1078,7 +1074,7 @@ Rectangle {
         }
     }
 
-    //SignTxDialog
+    //SubmitTxDialog
     FileDialog {
         id: submitTxDialog
         title: qsTr("Please choose a file") + translationManager.emptyString
@@ -1245,14 +1241,74 @@ Rectangle {
         fillPaymentDetails(address, payment_id, amount, description);
     }
 
+    function signTx(tx, txFormat) {
+        disconnectCameraUi()
+        if(txFormat !== cameraUi.transactionFormats.Unsigned)
+            return
+        transaction = currentWallet.loadTxString(tx)
+        if (transaction.status !== PendingTransaction.Status_Ok) {
+            console.error("Can't load unsigned transaction: ", transaction.errorString);
+            informationPopup.title = qsTr("Error") + translationManager.emptyString;
+            informationPopup.text  = qsTr("Can't load unsigned transaction: ") + transaction.errorString
+            informationPopup.icon  = StandardIcon.Critical
+            informationPopup.onCloseCallback = null
+            informationPopup.open();
+            // deleting transaction object, we don't want memleaks
+            transaction.destroy();
+        } else {
+            confirmationDialog.text =  qsTr("\nConfirmation message:\n ") + transaction.confirmationMessage
+            console.log(transaction.confirmationMessage);
+
+            // Show confirmation dialog
+            confirmationDialog.title = qsTr("Confirmation") + translationManager.emptyString
+            confirmationDialog.icon = StandardIcon.Question
+            confirmationDialog.onAcceptedCallback = function() {
+                var signed_tx = transaction.signAsString();
+                transaction.destroy();
+                urSender.sendTxSigned(signed_tx)
+                urDisplay.state = "Display"
+            };
+            confirmationDialog.onRejectedCallback = transaction.destroy;
+
+            confirmationDialog.open()
+        }
+    }
+
+    function submitTx(tx, txFormat) {
+        disconnectCameraUi()
+        if(txFormat !== cameraUi.transactionFormats.Signed)
+            return
+        if(!currentWallet.submitTxString(tx)){
+            informationPopup.title = qsTr("Error") + translationManager.emptyString;
+            informationPopup.text  = qsTr("Can't submit transaction: ") + currentWallet.errorString
+            informationPopup.icon  = StandardIcon.Critical
+            informationPopup.onCloseCallback = null
+            informationPopup.open();
+        } else {
+            informationPopup.title = qsTr("Information") + translationManager.emptyString
+            informationPopup.text  = qsTr("Monero sent successfully") + translationManager.emptyString
+            informationPopup.icon  = StandardIcon.Information
+            informationPopup.onCloseCallback = null
+            informationPopup.open();
+        }
+    }
+
     function importOutputs(outputs) {
         disconnectCameraUi()
-        currentWallet.importOutputsFromString(outputs);
+        if (currentWallet.importOutputsFromString(outputs)) {
+            appWindow.showStatusMessage(qsTr("Outputs successfully imported to wallet") + translationManager.emptyString, 3);
+        } else {
+            appWindow.showStatusMessage(currentWallet.errorString, 5);
+        }
     }
 
     function importKeyImages(keyImages) {
         disconnectCameraUi()
-        currentWallet.importKeyImagesFromString(keyImages);
+        if (currentWallet.importKeyImagesFromString(keyImages)) {
+            appWindow.showStatusMessage(qsTr("Key images successfully imported to wallet") + translationManager.emptyString, 3);
+        } else {
+            appWindow.showStatusMessage(currentWallet.errorString, 5);
+        }
     }
 
     function scanCanceled() {
@@ -1263,5 +1319,6 @@ Rectangle {
         cameraUi.outputs.disconnect(root.importOutputs)
         cameraUi.canceled.disconnect(root.scanCanceled)
         cameraUi.keyImages.disconnect(root.importKeyImages)
+        cameraUi.transaction.disconnect(root.submitTx)
     }
 }
