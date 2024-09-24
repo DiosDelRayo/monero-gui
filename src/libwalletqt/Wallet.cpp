@@ -699,6 +699,14 @@ void Wallet::commitTransactionAsync(PendingTransaction *t)
     });
 }
 
+void Wallet::commitTransactionForExportAsync(PendingTransaction *t)
+{
+    m_scheduler.run([this, t] {
+        auto txIdList = t->txid();  // retrieve before commit
+        emit transactionCommittedForExport(t->commitAsString(), t, txIdList);
+    });
+}
+
 void Wallet::disposeTransaction(PendingTransaction *t)
 {
     m_walletImpl->disposeTransaction(t->m_pimpl);

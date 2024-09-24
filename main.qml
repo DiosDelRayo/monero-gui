@@ -346,6 +346,7 @@ ApplicationWindow {
         currentWallet.deviceButtonPressed.connect(onDeviceButtonPressed);
         currentWallet.walletPassphraseNeeded.connect(onWalletPassphraseNeededWallet);
         currentWallet.transactionCommitted.connect(onTransactionCommitted);
+        currentWallet.transactionCommitted.connect(onTransactionCommitted);
         currentWallet.proxyAddress = Qt.binding(persistentSettings.getWalletProxyAddress);
         middlePanel.paymentClicked.connect(handlePayment);
         middlePanel.sweepUnmixableClicked.connect(handleSweepUnmixable);
@@ -947,8 +948,13 @@ ApplicationWindow {
 
     // called after user confirms transaction
     function handleTransactionConfirmed(fileName) {
-        // View only wallet - we save the tx
-        if(viewOnly){
+        if(viewOnly && persistentSettings.useURCode) {
+            appWindow.showProcessingSplash(qsTr("Preparing transaction ..."));
+            currentWallet.commitTransactionForExportAsync(transaction);
+            return
+        }
+        // View only wallet - we save the tx to file if UR is not enabled
+        if(viewOnly && !persistentSettings.useURCode){
             // No file specified - abort
             if(!saveTxDialog.fileUrl) {
                 currentWallet.disposeTransaction(transaction)
@@ -967,6 +973,35 @@ ApplicationWindow {
     function onTransactionCommitted(success, transaction, txid) {
         hideProcessingSplash();
         if (!success) {
+            console.log("Error committing transaction: " + transaction.errorString);
+            informationPopup.title = qsTr("Error") + translationManager.emptyString
+            informationPopup.text  = qsTr("Couldn't send the money: ") + transaction.errorString
+            informationPopup.icon  = StandardIcon.Critical
+            informationPopup.onCloseCallback = null;
+            informationPopup.open();
+        } else {
+            if (txConfirmationPopup.transactionDescription.length > 0) {
+                for (var i = 0; i < txid.length; ++i)
+                    currentWallet.setUserNote(txid[i], txConfirmationPopup.transactionDescription);
+            }
+
+            // Clear tx fields
+            middlePanel.transferView.clearFields()
+            txConfirmationPopup.clearFields()
+            successfulTxPopup.open(txid)
+        }
+        currentWallet.refresh()
+        currentWallet.disposeTransaction(transaction)
+        currentWallet.storeAsync(function(success) {
+            if (!success) {
+                appWindow.showStatusMessage(qsTr("Failed to store the wallet"), 3);
+            }
+        });
+    }
+
+    function onTransactionCommittedForExport(txString, transaction, txid) {
+        hideProcessingSplash();
+        if (txString === "") {
             console.log("Error committing transaction: " + transaction.errorString);
             informationPopup.title = qsTr("Error") + translationManager.emptyString
             informationPopup.text  = qsTr("Couldn't send the money: ") + transaction.errorString
@@ -1605,7 +1640,7 @@ ApplicationWindow {
         onAccepted: {
             var handleAccepted = function() {
                 // Save transaction to file if view only wallet
-                if (viewOnly) {
+                if (viewOnly && !persistentSettings.useURCode) {
                     saveTxDialog.open();
                 } else {
                     handleTransactionConfirmed()

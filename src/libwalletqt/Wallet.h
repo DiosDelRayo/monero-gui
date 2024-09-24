@@ -259,6 +259,9 @@ public:
     //! asynchronous transaction commit
     Q_INVOKABLE void commitTransactionAsync(PendingTransaction * t);
 
+    //! asynchronous transaction commit for export
+    Q_INVOKABLE void commitTransactionForExportAsync(PendingTransaction * t);
+
     //! deletes transaction and frees memory
     Q_INVOKABLE void disposeTransaction(PendingTransaction * t);
 
@@ -382,6 +385,7 @@ signals:
     void deviceButtonPressed();
     void walletPassphraseNeeded(bool onDevice);
     void transactionCommitted(bool status, PendingTransaction *t, const QStringList& txid);
+    void transactionCommittedForExport(const QString &txAsString, PendingTransaction *t, const QStringList& txid);
     void heightRefreshed(quint64 walletHeight, quint64 daemonHeight, quint64 targetHeight) const;
     void deviceShowAddressShowed();
 
