@@ -328,7 +328,7 @@ Rectangle {
         }
     }
 
-    disconnectScanner() {
+    function disconnectScanner() {
         cameraUi.wallet.disconnect(onWallet)
         cameraUi.canceled.disconnect(onScanCancel)
     }
