@@ -206,7 +206,7 @@ public:
 
     //! export/import key images
     Q_INVOKABLE QString exportKeyImagesAsString(bool all = false);
-    Q_INVOKABLE bool importKeyImagesFromString(QString &data);
+    Q_INVOKABLE bool importKeyImagesFromString(const QString &data);
     Q_INVOKABLE bool exportKeyImages(const QString& path, bool all = false);
     Q_INVOKABLE bool importKeyImages(const QString& path);
 

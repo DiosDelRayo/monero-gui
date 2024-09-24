@@ -301,7 +301,8 @@ Rectangle {
                             tooltip: qsTr("Scan QR code") + translationManager.emptyString
                             onClicked: {
                                 if(builtWithOtsUr) {
-                                    cameraUi.address.connect(root.)
+                                    cameraUi.address.connect(root.addressFromScanner)
+                                    cameraUi.canceled.connect(root.scanCanceled)
                                     cameraUi.mode = cameraUi.modes.Address
 
                                 } else {
