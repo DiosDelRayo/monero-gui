@@ -979,7 +979,7 @@ Rectangle {
                 console.log("Transfer: sign tx clicked")
                 if(persistentSettings.useURCode) {
                     urScannerUi.canceled.connect(root.scanCanceled)
-                    urScannerUi.transaction.connect(root.signTx)
+                    urScannerUi.unsignedTx.connect(root.signTx)
                     urScannerUi.scanUnsignedTx()
                 } else {
                     signTxDialog.open();
@@ -1313,6 +1313,7 @@ Rectangle {
         urScannerUi.outputs.disconnect(root.importOutputs)
         urScannerUi.canceled.disconnect(root.scanCanceled)
         urScannerUi.keyImages.disconnect(root.importKeyImages)
-        urScannerUi.transaction.disconnect(root.submitTx)
+        urScannerUi.unsignedTx.disconnect(root.signTx)
+        urScannerUi.signedTx.disconnect(root.submitTx)
     }
 }

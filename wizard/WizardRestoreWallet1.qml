@@ -338,19 +338,20 @@ Rectangle {
 
     function onWallet(walletData) {
         disconnectScanner()
+        reset()
         console.warn(walletData)
-        if(!walletData || !walletData.isValid)
+        if(!walletData || !walletData.isValid) {
+            keysRadioButton.clicked()
             return
+        }
         if(walletData.isSeed) {
-            reset()
             seedRadioButton.clicked()
             seedInput.text = walletData.mnemonicSeed
             restoreHeight.text = walletData.height
             return
         }
-        reset()
-        addressLine.text = walletData.address
         keysRadioButton.clicked()
+        addressLine.text = walletData.address
         viewKeyLine.text = walletData.viewKey
         spendKeyLine.text = walletData.spendKey
         restoreHeight.text = walletData.height

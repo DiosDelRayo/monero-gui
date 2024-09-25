@@ -35,10 +35,10 @@ Rectangle {
     signal qrCode(string data)
     signal wallet(MoneroWalletData walletData)
     signal txData(MoneroTxData data)
-    signal unsignedTx(string tx)
-    signal signedTx(string tx)
-    signal keyImages(string keyImages)
-    signal outputs(string outputs)
+    signal unsignedTx(var tx)
+    signal signedTx(var tx)
+    signal keyImages(var keyImages)
+    signal outputs(var outputs)
 
     states: [
         State {

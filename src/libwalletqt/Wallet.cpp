@@ -506,9 +506,9 @@ bool Wallet::exportKeyImages(const QString& path, bool all)
     return m_walletImpl->exportKeyImages(path.toStdString(), all);
 }
 
-QString Wallet::exportKeyImagesAsString(bool all)
+QByteArray Wallet::exportKeyImagesAsString(bool all)
 {
-    return QString::fromStdString(m_walletImpl->exportKeyImagesAsString(all));
+    return QByteArray::fromStdString(m_walletImpl->exportKeyImagesAsString(all));
 }
 
 bool Wallet::importKeyImages(const QString& path)
@@ -516,20 +516,20 @@ bool Wallet::importKeyImages(const QString& path)
     return m_walletImpl->importKeyImages(path.toStdString());
 }
 
-bool Wallet::importKeyImagesFromString(const QString& data)
+bool Wallet::importKeyImagesFromString(const QByteArray& data)
 {
     return m_walletImpl->importKeyImagesFromString(data.toStdString());
 }
 
-QString Wallet::exportOutputsAsString(bool all) const {
-    return QString::fromStdString(m_walletImpl->exportOutputsAsString(all));
+QByteArray Wallet::exportOutputsAsString(bool all) const {
+    return QByteArray::fromStdString(m_walletImpl->exportOutputsAsString(all));
 }
 
 bool Wallet::exportOutputs(const QString& path, bool all) {
     return m_walletImpl->exportOutputs(path.toStdString(), all);
 }
 
-bool Wallet::importOutputsFromString(const QString& data) {
+bool Wallet::importOutputsFromString(const QByteArray& data) {
     return m_walletImpl->importOutputsFromString(data.toStdString());
 }
 
@@ -668,7 +668,7 @@ UnsignedTransaction * Wallet::loadTxFile(const QString &fileName)
     return result;
 }
 
-UnsignedTransaction * Wallet::loadTxString(const QString &data)
+UnsignedTransaction * Wallet::loadTxString(const QByteArray &data)
 {
     qDebug() << "Trying to sign";
     Monero::UnsignedTransaction * ptImpl = m_walletImpl->loadUnsignedTxFromString(data.toStdString());
@@ -685,7 +685,7 @@ bool Wallet::submitTxFile(const QString &fileName) const
     return m_walletImpl->importKeyImages(fileName.toStdString() + "_keyImages");
 }
 
-bool Wallet::submitTxString(const QString &data) const
+bool Wallet::submitTxString(const QByteArray &data) const
 {
     qDebug() << "Trying to submit";
     return m_walletImpl->submitTransactionFromString(data.toStdString()); // TODO: Why importing key images? This had should be done before... (remove this comment after clarification)

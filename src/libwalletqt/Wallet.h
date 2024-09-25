@@ -205,14 +205,14 @@ public:
     Q_INVOKABLE void refreshHeightAsync();
 
     //! export/import key images
-    Q_INVOKABLE QString exportKeyImagesAsString(bool all = false);
-    Q_INVOKABLE bool importKeyImagesFromString(const QString &data);
+    Q_INVOKABLE QByteArray exportKeyImagesAsString(bool all = false);
+    Q_INVOKABLE bool importKeyImagesFromString(const QByteArray &data);
     Q_INVOKABLE bool exportKeyImages(const QString& path, bool all = false);
     Q_INVOKABLE bool importKeyImages(const QString& path);
 
     //! export/import outputs
-    Q_INVOKABLE QString exportOutputsAsString(bool all = false) const;
-    Q_INVOKABLE bool importOutputsFromString(const QString& data);
+    Q_INVOKABLE QByteArray exportOutputsAsString(bool all = false) const;
+    Q_INVOKABLE bool importOutputsFromString(const QByteArray& data);
     Q_INVOKABLE bool exportOutputs(const QString& path, bool all = false);
     Q_INVOKABLE bool importOutputs(const QString& path);
 
@@ -249,11 +249,11 @@ public:
     Q_INVOKABLE void createSweepUnmixableTransactionAsync();
 
     //! Sign a transfer from file
-    Q_INVOKABLE UnsignedTransaction * loadTxString(const QString &data);
+    Q_INVOKABLE UnsignedTransaction * loadTxString(const QByteArray &data);
     Q_INVOKABLE UnsignedTransaction * loadTxFile(const QString &fileName);
 
     //! Submit a transfer from file
-    Q_INVOKABLE bool submitTxString(const QString &data) const;
+    Q_INVOKABLE bool submitTxString(const QByteArray &data) const;
     Q_INVOKABLE bool submitTxFile(const QString &fileName) const;
 
     //! asynchronous transaction commit
