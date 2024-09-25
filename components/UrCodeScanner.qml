@@ -172,20 +172,22 @@ Rectangle {
             onDoubleClicked: root.cancel()
         }
         Rectangle {
-            height: 30
-            width: 200
+            id: scanTypeFrame
+            height: scanType.height + 50
+            width: scanType.width + 50
             z: parent.z + 1
             color: "orange"
             opacity: 0.4
+            anchors.centerIn: scanType
+        }
+        Text {
+            z: scanTypeFrame.z + 1
             anchors.centerIn: parent
-            Text {
-                anchors.fill: parent
-                id: scanType
-                text: ""
-                font.pixelSize: 24
-                color: "black"
-                opacity: 0.7
-            }
+            id: scanType
+            text: ""
+            font.pixelSize: 22
+            color: "white"
+            opacity: 0.7
         }
     }
 
