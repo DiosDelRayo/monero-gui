@@ -978,7 +978,7 @@ Rectangle {
             button2.onClicked: {
                 console.log("Transfer: sign tx clicked")
                 if(persistentSettings.useURCode) {
-                    cameraUi.canceled.connect(root.scanCanceled())
+                    cameraUi.canceled.connect(root.scanCanceled)
                     cameraUi.transaction.connect(root.signTx)
                     cameraUi.transactionFormat = cameraUi.transactionFormats.Unsigned
                     cameraUi.mode = cameraUi.modes.Transaction

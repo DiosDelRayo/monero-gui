@@ -164,10 +164,28 @@ Rectangle {
             }
             switch(root.mode) {
             case root.modes.Outputs:
+                if(type !== "xmr-output") {
+                    root.cancel()
+                    return
+                }
+                root.outputs(data)
                 break
             case root.modes.KeyImages:
+                if(type !== "xmr-keyimage") {
+                    root.cancel()
+                    return
+                }
+                root.keyImages(data)
                 break
             case root.modes.Transaction:
+                if(
+                    (root.transactionFormat === root.transactionFormats.Unsigned && type !== "xmr-txunsigned")
+                    || (root.transactionFormat === root.transactionFormats.Signed && type !== "xmr-txsigned")
+                ) {
+                    root.cancel()
+                    return
+                }
+                root.transaction(data, type)
                 break
             default:
                 root.cancel()

@@ -299,6 +299,7 @@ ApplicationWindow {
         currentWallet.deviceButtonPressed.disconnect(onDeviceButtonPressed);
         currentWallet.walletPassphraseNeeded.disconnect(onWalletPassphraseNeededWallet);
         currentWallet.transactionCommitted.disconnect(onTransactionCommitted);
+        currentWallet.transactionCommittedForExport.disconnect(onTransactionCommittedForExport);
         middlePanel.paymentClicked.disconnect(handlePayment);
         middlePanel.sweepUnmixableClicked.disconnect(handleSweepUnmixable);
         middlePanel.getProofClicked.disconnect(handleGetProof);
@@ -346,7 +347,7 @@ ApplicationWindow {
         currentWallet.deviceButtonPressed.connect(onDeviceButtonPressed);
         currentWallet.walletPassphraseNeeded.connect(onWalletPassphraseNeededWallet);
         currentWallet.transactionCommitted.connect(onTransactionCommitted);
-        currentWallet.transactionCommitted.connect(onTransactionCommitted);
+        currentWallet.transactionCommittedForExport.connect(onTransactionCommittedForExport);
         currentWallet.proxyAddress = Qt.binding(persistentSettings.getWalletProxyAddress);
         middlePanel.paymentClicked.connect(handlePayment);
         middlePanel.sweepUnmixableClicked.connect(handleSweepUnmixable);
@@ -925,13 +926,13 @@ ApplicationWindow {
 
         txConfirmationPopup.sweepUnmixable = true;
         transaction = currentWallet.createSweepUnmixableTransaction();
-        if (transaction.status !== PendingTransaction.Status_Ok) {
+        if (transaction.status !== PendingTransaction.Status_Ok) { // TODO: Dialog should only inform and offer only OK button IMO, informationPopup instead?
             console.error("Can't create transaction: ", transaction.errorString);
             txConfirmationPopup.errorText.text  = qsTr("Can't create transaction: ") + transaction.errorString + translationManager.emptyString
             // deleting transaction object, we don't want memleaks
             currentWallet.disposeTransaction(transaction);
 
-        } else if (transaction.txCount == 0) {
+        } else if (transaction.txCount == 0) { // TODO: Dialog should only inform and offer only OK button IMO, informationPopup instead?
             console.error("No unmixable outputs to sweep");
             txConfirmationPopup.errorText.text  = qsTr("No unmixable outputs to sweep") + translationManager.emptyString
             // deleting transaction object, we don't want memleaks
@@ -1018,6 +1019,8 @@ ApplicationWindow {
             middlePanel.transferView.clearFields()
             txConfirmationPopup.clearFields()
             successfulTxPopup.open(txid)
+            urSender.sendTxUnsigned(txString)
+            urDisplay.state = "Display"
         }
         currentWallet.refresh()
         currentWallet.disposeTransaction(transaction)
