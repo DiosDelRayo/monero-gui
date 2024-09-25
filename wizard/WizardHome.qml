@@ -170,10 +170,8 @@ Rectangle {
                 imageIcon: "qrc:///images/restore-wallet-from-qr.png"
 
                 onMenuClicked: {
-                    cameraUi.walletMode = cameraUi.walletModes.ViewOnly
-                    cameraUi.qrCodeFormat = cameraUi.qrCodeFormats.Both
-                    cameraUi.mode = cameraUi.modes.Wallet
-                    cameraUi.viewWallet.connect(wizardHome.onViewWalletFromQr)
+                    urScannerUi.wallet.connect(wizardHome.onViewWalletFromQr)
+                    urScannerUi.scanWallet()
                 }
             }
 
@@ -274,20 +272,23 @@ Rectangle {
         }
     }
 
-    function onViewWalletFromQr(address, viewKey, height) {
-	disconnectScanner();
+    function onViewWalletFromQr(walletData) {
+        disconnectScanner();
+        console.warn("walletData: " + walletData)
+        if(!walletData || !walletData.isViewOnly)
+            return // handle only view only wallets here
         wizardController.restart();
         wizardStateView.state = "wizardRestoreWallet1"
-        wizardStateView.wizardRestoreWallet1View.onViewWallet(address, viewKey, height)
+        wizardStateView.wizardRestoreWallet1View.onWallet(walletData)
     }
 
     function onViewWalletScanAbort() {
-	disconnectScanner();
+        disconnectScanner();
     }
 
     function disconnectScanner() {
-        cameraUi.viewWallet.disconnect(wizardHome.onViewWalletFromQr)
-        cameraUi.canceled.disconnect(wizardHome.onViewWalletScanAbort)
+        urScannerUi.wallet.disconnect(wizardHome.onViewWalletFromQr)
+        urScannerUi.canceled.disconnect(wizardHome.onViewWalletScanAbort)
     }
 
     function onPageCompleted(){

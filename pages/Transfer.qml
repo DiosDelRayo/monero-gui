@@ -301,9 +301,9 @@ Rectangle {
                             tooltip: qsTr("Scan QR code") + translationManager.emptyString
                             onClicked: {
                                 if(builtWithOtsUr) {
-                                    cameraUi.address.connect(root.addressFromScanner)
-                                    cameraUi.canceled.connect(root.scanCanceled)
-                                    cameraUi.mode = cameraUi.modes.Address
+                                    urScannerUi.txData.connect(root.txDataFromScanner)
+                                    urScannerUi.canceled.connect(root.scanCanceled)
+                                    urScannerUi.scanTxData()
 
                                 } else {
                                     cameraUi.state = "Capture"
@@ -901,9 +901,9 @@ Rectangle {
             button2.onClicked: {
                 console.log("Transfer: import outputs clicked")
                 if(persistentSettings.useURCode) {
-                    cameraUi.outputs.connect(root.importOutputs)
-                    cameraUi.canceled.connect(root.scanCanceled)
-                    cameraUi.mode = cameraUi.modes.Outputs
+                    urScannerUi.outputs.connect(root.importOutputs)
+                    urScannerUi.canceled.connect(root.scanCanceled)
+                    urScannerUi.scanOutputs()
                 } else {
                     importOutputsDialog.open();
                 }
@@ -939,9 +939,9 @@ Rectangle {
             button2.onClicked: {
                 console.log("Transfer: import key images clicked")
                 if(persistentSettings.useURCode) {
-                    cameraUi.keyImages.connect(root.importKeyImages)
-                    cameraUi.canceled.connect(root.scanCanceled)
-                    cameraUi.mode = cameraUi.modes.KeyImages
+                    urScannerUi.keyImages.connect(root.importKeyImages)
+                    urScannerUi.canceled.connect(root.scanCanceled)
+                    urScannerUi.scanKeyImages()
                 } else {
                     importKeyImagesDialog.open();
                 }
@@ -978,10 +978,9 @@ Rectangle {
             button2.onClicked: {
                 console.log("Transfer: sign tx clicked")
                 if(persistentSettings.useURCode) {
-                    cameraUi.canceled.connect(root.scanCanceled)
-                    cameraUi.transaction.connect(root.signTx)
-                    cameraUi.transactionFormat = cameraUi.transactionFormats.Unsigned
-                    cameraUi.mode = cameraUi.modes.Transaction
+                    urScannerUi.canceled.connect(root.scanCanceled)
+                    urScannerUi.transaction.connect(root.signTx)
+                    urScannerUi.scanUnsignedTx()
                 } else {
                     signTxDialog.open();
                 }
@@ -991,10 +990,9 @@ Rectangle {
             button3.onClicked: {
                 console.log("Transfer: submit tx clicked")
                 if(persistentSettings.useURCode) {
-                    cameraUi.canceled.connect(root.scanCanceled)
-                    cameraUi.transaction.connect(root.submitTx)
-                    cameraUi.transactionFormat = cameraUi.transactionFormats.Signed
-                    cameraUi.mode = cameraUi.modes.Transaction
+                    urScannerUi.canceled.connect(root.scanCanceled)
+                    urScannerUi.signedTx.connect(root.submitTx)
+                    urScannerUi.scanSignedTx()
                 } else {
                     submitTxDialog.open();
                 }
@@ -1235,16 +1233,14 @@ Rectangle {
         fillPaymentDetails(address, paymentId, amount, description);
     }
 
-    function addressFromScanner(address, payment_id, recipient_name, amount, description) {
+    function txDataFromScanner(txData) {
         disconnectCameraUi()
         middlePanel.state = 'Transfer';
-        fillPaymentDetails(address, payment_id, amount, description);
+        fillPaymentDetails(txData.address, txData.payment_id, txData.amount, txData.description);
     }
 
-    function signTx(tx, txFormat) {
+    function signTx(tx) {
         disconnectCameraUi()
-        if(txFormat !== cameraUi.transactionFormats.Unsigned)
-            return
         transaction = currentWallet.loadTxString(tx)
         if (transaction.status !== PendingTransaction.Status_Ok) {
             console.error("Can't load unsigned transaction: ", transaction.errorString);
@@ -1274,10 +1270,8 @@ Rectangle {
         }
     }
 
-    function submitTx(tx, txFormat) {
+    function submitTx(tx) {
         disconnectCameraUi()
-        if(txFormat !== cameraUi.transactionFormats.Signed)
-            return
         if(!currentWallet.submitTxString(tx)){
             informationPopup.title = qsTr("Error") + translationManager.emptyString;
             informationPopup.text  = qsTr("Can't submit transaction: ") + currentWallet.errorString
@@ -1316,9 +1310,9 @@ Rectangle {
     }
 
     function disconnectCameraUi() {
-        cameraUi.outputs.disconnect(root.importOutputs)
-        cameraUi.canceled.disconnect(root.scanCanceled)
-        cameraUi.keyImages.disconnect(root.importKeyImages)
-        cameraUi.transaction.disconnect(root.submitTx)
+        urScannerUi.outputs.disconnect(root.importOutputs)
+        urScannerUi.canceled.disconnect(root.scanCanceled)
+        urScannerUi.keyImages.disconnect(root.importKeyImages)
+        urScannerUi.transaction.disconnect(root.submitTx)
     }
 }

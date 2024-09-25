@@ -88,6 +88,7 @@ ApplicationWindow {
     property bool isMining: false
     property int walletMode: persistentSettings.walletMode
     property var cameraUi
+    property var urScannerUi
     property var urDisplay
     property bool androidCloseTapped: false;
     property int userLastActive;  // epoch
@@ -1385,7 +1386,7 @@ ApplicationWindow {
             var urScanComponent = Qt.createComponent("components/UrCodeScanner.qml");
             console.warn(urScanComponent.errorString())
             if (urScanComponent.status == Component.Ready) {
-                cameraUi = urScanComponent.createObject(appWindow);
+                urScannerUi = urScanComponent.createObject(appWindow);
             } else {
                 console.warn("UR Scanner component not READY !!!");
             }
@@ -2192,8 +2193,10 @@ ApplicationWindow {
         console.log("blocking close event");
         if(isAndroid) {
             console.log("blocking android exit");
-            if(qrScannerEnabled)
+            if(qrScannerEnabled && builtWithScanner)
                 cameraUi.state = "Stopped"
+            if(qrScannerEnabled && builtWithOtsUr)
+                urScannerUi.cancel()
 
             if(!androidCloseTapped) {
                 androidCloseTapped = true;

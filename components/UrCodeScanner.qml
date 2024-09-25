@@ -173,13 +173,13 @@ Rectangle {
         }
         Rectangle {
             height: 30
-            width: 100
+            width: 200
             z: parent.z + 1
             color: "orange"
             opacity: 0.4
             anchors.centerIn: parent
             Text {
-                anchors.centerIn: parent
+                anchors.fill: parent
                 id: scanType
                 text: ""
                 font.pixelSize: 24
@@ -219,37 +219,37 @@ Rectangle {
     function scanWallet() {
         root.mode = root.modes.Wallet
         scanType.text = qsTr("Scan Wallet QR Code")
-        urScanner.qr()
+        urScanner.scanWallet()
     }
 
-    function scanAddress() {
+    function scanTxData() {
         root.mode = root.modes.Address
         scanType.text = qsTr("Scan Tx Data QR Code")
-        urScanner.qr()
+        urScanner.scanTxData()
     }
 
     function scanOutputs() {
         root.mode = root.modes.Outputs
         scanType.text = qsTr("Scan Outputs UR Code")
-        urScanner.outputs()
+        urScanner.scanOutputs()
     }
 
     function scanKeyImages() {
         root.mode = root.modes.KeyImages
         scanType.text = qsTr("Scan Key Images UR Code")
-        urScanner.keyImages()
+        urScanner.scanKeyImages()
     }
 
     function scanUnsignedTx() {
         root.mode = root.modes.UnsignedTx
         scanType.text = qsTr("Scan Unsigned Transaction UR Code")
-        urScanner.unsignedTx()
+        urScanner.scanUnsignedTx()
     }
 
     function scanSignedTx() {
         root.mode = root.modes.SignedTx
         scanType.text = qsTr("Scan Signed Transaction UR Code")
-        urScanner.signedTx()
+        urScanner.scanSignedTx()
     }
 
     Component.onCompleted: {

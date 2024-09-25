@@ -152,10 +152,9 @@ Rectangle {
                         seedRadioButton.checked = false;
                         keysRadioButton.checked = false;
                         wizardController.walletRestoreMode = 'qr';
-                        cameraUi.wallet.connect(wizardRestoreWallet1.onWallet);
-                        cameraUi.canceled.connect(wizardRestoreWallet1.onScanCancel);
-                        cameraUi.walletMode = cameraUi.walletModes.Both
-                        cameraUi.mode = cameraUi.modes.Wallet
+                        urScannerUi.wallet.connect(wizardRestoreWallet1.onWallet);
+                        urScannerUi.canceled.connect(wizardRestoreWallet1.onScanCancel);
+                        urScannerUi.scanWallet()
                     }
                 }
             }
@@ -329,23 +328,42 @@ Rectangle {
     }
 
     function disconnectScanner() {
-        cameraUi.wallet.disconnect(onWallet)
-        cameraUi.canceled.disconnect(onScanCancel)
+        urScannerUi.wallet.disconnect(onWallet)
+        urScannerUi.canceled.disconnect(onScanCancel)
     }
 
     function onScanCancel() {
 	disconnectScanner()
     }
 
-    function onWallet(address, viewKey, spendKey, height) {
-	disconnectScanner()
-	addressLine.text = address
-	keysRadioButton.clicked()
-	viewKeyLine.text = viewKey
-	spendKeyLine.text = spendKey
-	restoreHeight.text = height
-	cameraUi.wallet.disconnect(onWallet)
-	cameraUi.canceled.disconnect(onScanCancel)
+    function onWallet(walletData) {
+        disconnectScanner()
+        console.warn(walletData)
+        if(!walletData || !walletData.isValid)
+            return
+        if(walletData.isSeed) {
+            reset()
+            seedRadioButton.clicked()
+            seedInput.text = walletData.mnemonicSeed
+            restoreHeight.text = walletData.height
+            return
+        }
+        reset()
+        addressLine.text = walletData.address
+        keysRadioButton.clicked()
+        viewKeyLine.text = walletData.viewKey
+        spendKeyLine.text = walletData.spendKey
+        restoreHeight.text = walletData.height
+    }
+
+    function reset() {
+        seedInput.text = "";
+        seedOffsetCheckbox.checked = false;
+        seedOffset.text = "";
+        addressLine.text = "";
+        spendKeyLine.text = "";
+        viewKeyLine.text = "";
+        restoreHeight.text = "";
     }
 
     function onPageCompleted(previousView){
@@ -355,13 +373,7 @@ Rectangle {
             seedRadioButton.checked = true;
             keysRadioButton.checked = false;
             qrRadioButton.checked = false;
-            seedInput.text = "";
-            seedOffsetCheckbox.checked = false;
-            seedOffset.text = "";
-            addressLine.text = "";
-            spendKeyLine.text = "";
-            viewKeyLine.text = "";
-            restoreHeight.text = "";
+            reset()
         }
     }
 }
