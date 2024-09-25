@@ -18,53 +18,25 @@ Rectangle {
     color: "black"
     state: "Stopped"
 
-    readonly property var walletModes: {
-        "Both": 3,
-        "Full": 2,
-        "ViewOnly": 1
-    }
-
-    readonly property var qrCodeFormats: {
-        "Both": 3,
-        "Uri": 1,
-        "Json": 2
-    }
-
-    readonly property var addressTypes: {
-        "Any": 3,
-        "Wallet": 1,
-        "SubAddress": 2
-    }
-
-    readonly property var transactionFormats: {
-        "Both": 3,
-        "Unsigned": 1,
-        "Signed": 2
-    }
-
     readonly property var modes: {
         "None": 0,
         "QrCode": 1,
         "Wallet": 2,
         "Address": 3,
-        "Transaction": 4,
-        "Outputs": 5,
-        "KeyImages": 6
+        "Outputs": 4,
+        "KeyImages": 5,
+        "UnsignedTx": 6,
+        "SignedTx": 7
     }
 
     property int mode: modes.None
-    property int qrCodeFormat: qrCodeFormats.Both
-    property int walletMode: walletModes.Both
-    property int addressType: addressTypes.Any
-    property int transactionFormat:  transactionFormats.Both
 
-    signal qrcode_decoded(string address, string payment_id, string amount, string tx_description, string recipient_name, var extra_parameters)
     signal canceled()
     signal qrCode(string data)
-    signal wallet(string address, string spendKey, string viewKey, int height)
-    signal viewWallet(string address, string viewKey, int height)
-    signal transaction(string tx, int txFormat)
-    signal address(string address, string payment_id, string recipient_name, string amount, string description)
+    signal wallet(MoneroWalletData walletData)
+    signal txData(MoneroTxData data)
+    signal unsignedTx(string tx)
+    signal signedTx(string tx)
     signal keyImages(string keyImages)
     signal outputs(string outputs)
 
@@ -79,8 +51,6 @@ Rectangle {
                     urCamera.captureMode = Camera.CaptureStillImage
                     urCamera.cameraState = Camera.ActiveState
                     urCamera.start()
-                    urScanner.reset()
-                    urScanner.startCapture(root.mode in [ root.modes.Outputs, root.modes.KeyImages, root.modes.Transaction ])
                 }
             }
         },
@@ -94,10 +64,6 @@ Rectangle {
                     urScanner.stop()
                     root.visible = false
                     urCamera.cameraState = Camera.UnloadedState
-                    root.qrCodeFormat = qrCodeFormats.Both
-                    root.walletMode = walletModes.Both
-                    root.addressType = addressTypes.Any
-                    root.transactionFormat = transactionFormats.Both
                 }
             }
         }
@@ -122,81 +88,14 @@ Rectangle {
         id: urScanner
         objectName: "urScanner"
         onQrDataReceived: function(data) {
-            console.warn("onQrDataReceived: " + data)
-            if(!root.mode in [ root.modes.QrCode, root.modes.Wallet, root.modes.Address ]) {
-                urScanner.reset()
-                return
-            }
-            switch(root.mode) {
-            case root.modes.Wallet:
-                var w = MoneroUri.parseWalletDataUri(data)
-                if(!w) {
-                   root.cancel()
-                    return
-                }
-                if(root.walletMode in [root.walletModes.Both, root.walletModes.Full])
-                    root.wallet(w.address, w.spendKet, w.viewKey, w.height)
-                if(root.walletMode in [root.walletModes.Both, root.walletModes.ViewOnly])
-                    root.viewWallet(w.address, w.viewKey, w.height)
-                break
-            case root.modes.Address:
-                var t = MoneroUri.parseTxDataUri(data)
-                if(!t) {
-                   root.cancel()
-                    return
-                }
-                root.address(t.address, t.paymentId, t.recipientName, t.amount, t.description)
-                break
-            case root.modes.QrCode:
-                root.qrCode(data)
-                break
-            default:
-                root.cancel()
-                return
-            }
             root.mode = root.modes.None
         }
 
         onUrDataReceived: function(type, data) {
-            if(!root.mode in [ root.modes.Outputs, root.modes.KeyImages, root.modes.Transaction ]) {
-                root.cancel() // should never happen
-                return
-            }
-            switch(root.mode) {
-            case root.modes.Outputs:
-                if(type !== "xmr-output") {
-                    root.cancel()
-                    return
-                }
-                root.outputs(data)
-                break
-            case root.modes.KeyImages:
-                if(type !== "xmr-keyimage") {
-                    root.cancel()
-                    return
-                }
-                root.keyImages(data)
-                break
-            case root.modes.Transaction:
-                if(
-                    (root.transactionFormat === root.transactionFormats.Unsigned && type !== "xmr-txunsigned")
-                    || (root.transactionFormat === root.transactionFormats.Signed && type !== "xmr-txsigned")
-                ) {
-                    root.cancel()
-                    return
-                }
-                root.transaction(data, type)
-                break
-            default:
-                root.cancel()
-                return
-            }
             root.mode = root.modes.None
         }
 
         onUrDataFailed: function(error) {
-            if(!root.mode in [ root.modes.Outputs, root.modes.KeyImages, root.modes.Transaction ])
-                return // should never happen
             root.cancel()
         }
     }
@@ -244,19 +143,9 @@ Rectangle {
 
     /*
     QRCodeScanner {
-        onDecoded : {
             const parsed = walletManager.parse_uri_to_object(data);
-            if (!parsed.error) {
                 root.qrcode_decoded(parsed.address, parsed.payment_id, parsed.amount, parsed.tx_description, parsed.recipient_name, parsed.extra_parameters);
-                root.state = "Stopped";
             } else if (walletManager.addressValid(data, appWindow.persistentSettings.nettype)) {
-                root.qrcode_decoded(data, "", "", "", "", null);
-                root.state = "Stopped";
-            } else {
-                onNotifyError(parsed.error);
-            }
-        }
-    }
     */
 
     VideoOutput {
@@ -282,6 +171,22 @@ Rectangle {
             }
             onDoubleClicked: root.cancel()
         }
+        Rectangle {
+            height: 30
+            width: 100
+            z: parent.z + 1
+            color: "orange"
+            opacity: 0.4
+            anchors.centerIn: parent
+            Text {
+                anchors.centerIn: parent
+                id: scanType
+                text: ""
+                font.pixelSize: 24
+                color: "black"
+                opacity: 0.7
+            }
+        }
     }
 
     MouseArea {
@@ -305,10 +210,59 @@ Rectangle {
         root.canceled()
     }
 
+    function scanQrCode() {
+        root.mode = root.modes.QrCode
+        scanType.text = qsTr("Scan QR Code")
+        urScanner.qr()
+    }
+
+    function scanWallet() {
+        root.mode = root.modes.Wallet
+        scanType.text = qsTr("Scan Wallet QR Code")
+        urScanner.qr()
+    }
+
+    function scanAddress() {
+        root.mode = root.modes.Address
+        scanType.text = qsTr("Scan Tx Data QR Code")
+        urScanner.qr()
+    }
+
+    function scanOutputs() {
+        root.mode = root.modes.Outputs
+        scanType.text = qsTr("Scan Outputs UR Code")
+        urScanner.outputs()
+    }
+
+    function scanKeyImages() {
+        root.mode = root.modes.KeyImages
+        scanType.text = qsTr("Scan Key Images UR Code")
+        urScanner.keyImages()
+    }
+
+    function scanUnsignedTx() {
+        root.mode = root.modes.UnsignedTx
+        scanType.text = qsTr("Scan Unsigned Transaction UR Code")
+        urScanner.unsignedTx()
+    }
+
+    function scanSignedTx() {
+        root.mode = root.modes.SignedTx
+        scanType.text = qsTr("Scan Signed Transaction UR Code")
+        urScanner.signedTx()
+    }
+
     Component.onCompleted: {
         if( QtMultimedia.availableCameras.length === 0) {
             console.warn("No camera available. Disable qrScannerEnabled")
             appWindow.qrScannerEnabled = false
+            return
         }
+        urScanner.outputs.connect(root.outputs)
+        urScanner.keyImages.connect(root.keyImages)
+        urScanner.unsignedTx.connect(root.unsignedTx)
+        urScanner.signedTx.connect(root.signedTx)
+        urScanner.txData.connect(root.txData)
+        urScanner.wallet.connect(root.wallet)
     }
 }
