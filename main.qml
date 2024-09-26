@@ -1499,6 +1499,7 @@ ApplicationWindow {
         property bool blackTheme: MoneroComponents.Style.blackTheme
         property bool checkForUpdates: true
         property bool useURCode: false
+        property string lastUsedCamera: ""
         property bool autosave: true
         property int autosaveMinutes: 10
         property bool pruneBlockchain: false
@@ -2191,12 +2192,14 @@ ApplicationWindow {
     onClosing: {
         close.accepted = false;
         console.log("blocking close event");
+        if(builtWithOtsUr) {
+            urScannerUi.cancel()
+            urDisplay.state = "Stopped"
+        }
         if(isAndroid) {
             console.log("blocking android exit");
             if(qrScannerEnabled && builtWithScanner)
                 cameraUi.state = "Stopped"
-            if(qrScannerEnabled && builtWithOtsUr)
-                urScannerUi.cancel()
 
             if(!androidCloseTapped) {
                 androidCloseTapped = true;
@@ -2205,8 +2208,6 @@ ApplicationWindow {
                 // first close
                 return;
             }
-
-
         }
 
         // If daemon is running - prompt user before exiting

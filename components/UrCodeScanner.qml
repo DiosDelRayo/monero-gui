@@ -46,8 +46,12 @@ Rectangle {
             when: root.mode !== root.modes.None
             StateChangeScript {
                 script: {
-                    console.warn("script: capture")
                     root.visible = true
+                    for(var i = 0; i < QtMultimedia.availableCameras.length; i++)
+                        if(QtMultimedia.availableCameras[i].deviceId === persistentSettings.lastUsedCamera) {
+                            urCamera.deviceId = persistentSettings.lastUsedCamera
+                            break
+                        }
                     urCamera.captureMode = Camera.CaptureStillImage
                     urCamera.cameraState = Camera.ActiveState
                     urCamera.start()
@@ -59,7 +63,6 @@ Rectangle {
             when: root.mode === root.modes.None
             StateChangeScript {
                 script: {
-                    console.warn("script: stopped")
                     urCamera.stop()
                     urScanner.stop()
                     root.visible = false
@@ -112,6 +115,7 @@ Rectangle {
         onClicked: {
             btnSwitchCamera.visible = false
             urCamera.deviceId = urCamera.deviceId === QtMultimedia.availableCameras[0].deviceId ? QtMultimedia.availableCameras[1].deviceId : QtMultimedia.availableCameras[0].deviceId
+            persistentSettings.lastUsedCamera = urCamera.deviceId
             btnSwitchCamera.visible = true
         }
     }
@@ -127,7 +131,10 @@ Rectangle {
         anchors.topMargin: 20
         anchors.bottomMargin: 20
         dataModel: availableCameras
-        onChanged: urCamera.deviceId = QtMultimedia.availableCameras[cameraChooser.currentIndex].deviceId
+        onChanged: {
+            urCamera.deviceId = QtMultimedia.availableCameras[cameraChooser.currentIndex].deviceId
+            persistentSettings.lastUsedCamera = urCamera.deviceId
+        }
     }
 
     Camera {
@@ -171,20 +178,74 @@ Rectangle {
             }
             onDoubleClicked: root.cancel()
         }
+
         Rectangle {
             id: scanTypeFrame
-            height: scanType.height + 50
-            width: scanType.width + 50
+            height: scanType.height + 20
+            width: scanType.width + 30
             z: parent.z + 1
-            color: "orange"
+            radius: 16
+            color: "#FA6800"
             opacity: 0.4
             anchors.centerIn: scanType
         }
+
         Text {
             z: scanTypeFrame.z + 1
             anchors.centerIn: parent
             id: scanType
             text: ""
+            font.pixelSize: 22
+            color: "white"
+            opacity: 0.7
+        }
+
+        Rectangle {
+            id: scanProgress
+            property int scannedFrames: 0
+            property int totalFrames: 0
+            property int progress: 0
+            visible: true
+            height: textScanProgress.height + 10
+            width: viewfinder.width - 40
+            z: viewfinder.z + 1
+            radius: 16
+            color: "#FA6800"
+            opacity: 0.4
+            anchors.centerIn: viewfinder
+            anchors.bottom: viewfinder.bottom
+            anchors.bottomMargin: 20
+            function onScannedFrames(count, total) {
+                console.warn("scanned frames: " + count + "/" + total)
+                scanProgress.scannedFrames = count
+                scanProgress.totalFrames = total
+            }
+            function onProgress(complete) {
+                console.warn("progress: " + (complete * 100) + "%")
+                scanProgress.progress = complete * 100
+            }
+            function reset() {
+                scanProgress.progress = 0
+                scanProgress.scannedFrames = 0
+                scanProgress.totalFrames = 0
+            }
+        }
+
+        Rectangle {
+            id: scanProgressBar
+            visible: scanProgressBar.width > 32
+            height: scanProgress - 4
+            width: (parent.width - 4) * 100 / scanProgress.progress
+            x: parent.x + 2
+            y: parent.y + 2
+            radius: 16
+        }
+
+        Text {
+            z: scanProgress.z + 2
+            anchors.centerIn: parent
+            id: textScanProgress
+            text: (scanProgress.progress > 0 || scanProgress.totalFrames > 0) ? (scanProgress.progress + "% (" + scanProgress.scannedFrames + "/" + scanProgress.totalFrames + ")") : ""
             font.pixelSize: 22
             color: "white"
             opacity: 0.7
@@ -254,6 +315,17 @@ Rectangle {
         urScanner.scanSignedTx()
     }
 
+    function onUnexpectedFrame(urType){
+        console.warn("unexpected type: " + urType);
+    }
+
+    function onReceivedFrames(count){
+        console.warn("frame count: " + count);
+    }
+
+    function onDecodedFrame(data){
+        console.warn("decoded frame: " + data);
+    }
     Component.onCompleted: {
         if( QtMultimedia.availableCameras.length === 0) {
             console.warn("No camera available. Disable qrScannerEnabled")
@@ -266,5 +338,11 @@ Rectangle {
         urScanner.signedTx.connect(root.signedTx)
         urScanner.txData.connect(root.txData)
         urScanner.wallet.connect(root.wallet)
+        urScanner.qrCaptureStarted(scanProgress.reset)
+        urScanner.scannedFrames(scanProgress.onScannedFrames)
+        urScanner.estimatedCompletedPercentage(scanProgress.onProgress)
+        urScanner.unexpectedUrType(root.onUnexpectedFrame)
+        urScanner.receivedFrames(root.onReceivedFrames)
+        urScanner.decodedFrame(root.onDecodedFrame)
     }
 }

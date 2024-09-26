@@ -22,6 +22,7 @@ Rectangle {
                 script: {
                     root.visible = true
                     root.focus = true
+                    textDisplayType.text = "UR Code"
                 }
             }
         },
@@ -31,6 +32,7 @@ Rectangle {
                 script: {
                     root.visible = false
                     root.focus = false
+                    textDisplayType.text = ""
                 }
             }
         }
@@ -39,8 +41,8 @@ Rectangle {
     Image {
         id: qrCodeImage
         cache: false
-        width: 300
-        height: 300
+        width: qrCodeImage.height
+        height: Math.max(300, Math.min(parent.height - frameInfo.height - displayType.height - 240, parent.width - 40))
         anchors.centerIn: parent
         function reload() {
             var tmp = qrCodeImage.source
@@ -49,15 +51,52 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: frameInfo
+        height: textFrameInfo.height + 5
+        width: textFrameInfo.width + 20
+        z: parent.z + 1
+        radius: 16
+        color: "#FA6800"
+        visible: textFrameInfo.text !== ""
+        anchors.centerIn: textFrameInfo
+        opacity: 0.4
+    }
+
     Text {
         id: textFrameInfo
+        z: frameInfo.z + 1
         visible: urSender.isUrCode
-        width: 50
         text: urSender.currentFrameInfo
-        anchors.top: qrCodeImage.bottom
-        anchors.topMargin: 10
-        anchors.right: qrCodeImage.right
+        anchors.top: parent.top
+        anchors.horizontalCenter: qrCodeImage.horizontalCenter
+        anchors.margins: 30
+        font.pixelSize: 22
         color: "white"
+        opacity: 0.7
+    }
+
+    Rectangle {
+        id: displayType
+        height: textDisplayType.height + 5
+        width: textDisplayType.width + 20
+        z: parent.z + 1
+        radius: 16
+        color: "#FA6800"
+        anchors.centerIn: textDisplayType
+        opacity: 0.4
+    }
+
+    Text {
+        id: textDisplayType
+        z: displayType.z + 1
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: btnClose.top
+        anchors.margins: 30
+        text: ""
+        font.pixelSize: 22
+        color: "white"
+        opacity: 0.7
     }
 
     MoneroComponents.StandardButton {
