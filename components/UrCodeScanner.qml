@@ -18,18 +18,9 @@ Rectangle {
     color: "black"
     state: "Stopped"
 
-    readonly property var modes: {
-        "None": 0,
-        "QrCode": 1,
-        "Wallet": 2,
-        "Address": 3,
-        "Outputs": 4,
-        "KeyImages": 5,
-        "UnsignedTx": 6,
-        "SignedTx": 7
-    }
-
-    property int mode: modes.None
+    property bool active: false
+    property bool ur: true
+    property string errorMessage: ""
 
     signal canceled()
     signal qrCode(string data)
@@ -43,7 +34,7 @@ Rectangle {
     states: [
         State {
             name: "Capture"
-            when: root.mode !== root.modes.None
+            when: root.active
             StateChangeScript {
                 script: {
                     root.visible = true
@@ -60,7 +51,7 @@ Rectangle {
         },
         State {
             name: "Stopped"
-            when: root.mode === root.modes.None
+            when: !root.active
             StateChangeScript {
                 script: {
                     urCamera.stop()
@@ -91,11 +82,11 @@ Rectangle {
         id: urScanner
         objectName: "urScanner"
         onQrDataReceived: function(data) {
-            root.mode = root.modes.None
+            root.active = false
         }
 
         onUrDataReceived: function(type, data) {
-            root.mode = root.modes.None
+            root.active = false
         }
 
         onUrDataFailed: function(error) {
@@ -148,16 +139,9 @@ Rectangle {
         }
     }
 
-    /*
-    QRCodeScanner {
-            const parsed = walletManager.parse_uri_to_object(data);
-                root.qrcode_decoded(parsed.address, parsed.payment_id, parsed.amount, parsed.tx_description, parsed.recipient_name, parsed.extra_parameters);
-            } else if (walletManager.addressValid(data, appWindow.persistentSettings.nettype)) {
-    */
-
     VideoOutput {
         id: viewfinder
-        visible: root.state == "Capture"
+        visible: root.active == true
 
         x: 0
         y: btnSwitchCamera.height + 40 // 2 x 20 (margin)
@@ -171,7 +155,6 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
-            //propagateComposedEvents: true
             onPressAndHold: {
                 if (camera.lockStatus === Camera.locked)camera.unlock()
                 camera.searchAndLock()
@@ -201,28 +184,49 @@ Rectangle {
         }
 
         Rectangle {
+            id: unexpectedTypeFrame
+            visible: root.errorMessage !== ""
+            height: Math.max(unexpectedType.height + 20, scanTypeFrame.height)
+            width: Math.max(unexpectedType.width + 30, scanTypeFrame.width)
+            z: parent.z + 100
+            radius: 3
+            color: "black"
+            anchors.centerIn: unexpectedType
+        }
+
+        Text {
+            id: unexpectedType
+            visible: unexpectedTypeFrame.visible
+            text: root.errorMessage
+            z: unexpectedTypeFrame.z + 1
+            anchors.centerIn: parent
+            font.pixelSize: 22
+            color: "#FA6800"
+        }
+
+        Rectangle {
             id: scanProgress
             property int scannedFrames: 0
             property int totalFrames: 0
             property int progress: 0
-            visible: true
+            visible: root.ur
             height: textScanProgress.height + 10
-            width: viewfinder.width - 40
+            width: viewfinder.contentRect.width - 40
             z: viewfinder.z + 1
-            radius: 16
+            radius: 20
             color: "#FA6800"
             opacity: 0.4
-            anchors.centerIn: viewfinder
+            anchors.horizontalCenter: viewfinder.horizontalCenter
             anchors.bottom: viewfinder.bottom
             anchors.bottomMargin: 20
+
             function onScannedFrames(count, total) {
-                console.warn("scanned frames: " + count + "/" + total)
                 scanProgress.scannedFrames = count
                 scanProgress.totalFrames = total
             }
+
             function onProgress(complete) {
-                console.warn("progress: " + (complete * 100) + "%")
-                scanProgress.progress = complete * 100
+                scanProgress.progress = Math.floor(complete * 100)
             }
             function reset() {
                 scanProgress.progress = 0
@@ -233,18 +237,22 @@ Rectangle {
 
         Rectangle {
             id: scanProgressBar
-            visible: scanProgressBar.width > 32
-            height: scanProgress - 4
-            width: (parent.width - 4) * 100 / scanProgress.progress
-            x: parent.x + 2
-            y: parent.y + 2
+            visible: root.ur && scanProgressBar.width > 36
+            height: scanProgress.height - 8
+            width: Math.floor((scanProgress.width - 8) * scanProgress.progress / 100)
+            x: scanProgress.x + 4
+            y: scanProgress.y + 4
+            z: scanProgress.z + 1
+            color: "#FA6800"
+            opacity: 0.8
             radius: 16
         }
 
         Text {
-            z: scanProgress.z + 2
-            anchors.centerIn: parent
             id: textScanProgress
+            visible: root.ur
+            z: scanProgress.z + 2
+            anchors.centerIn: scanProgress
             text: (scanProgress.progress > 0 || scanProgress.totalFrames > 0) ? (scanProgress.progress + "% (" + scanProgress.scannedFrames + "/" + scanProgress.totalFrames + ")") : ""
             font.pixelSize: 22
             color: "white"
@@ -269,63 +277,64 @@ Rectangle {
     }
 
     function cancel() {
-        root.mode = root.modes.None
+        root.active = false
+        root.ur = true
         root.canceled()
     }
 
     function scanQrCode() {
-        root.mode = root.modes.QrCode
+        root.ur = false
+        root.active = true
         scanType.text = qsTr("Scan QR Code")
         urScanner.qr()
     }
 
     function scanWallet() {
-        root.mode = root.modes.Wallet
+        root.ur = false
+        root.active = true
         scanType.text = qsTr("Scan Wallet QR Code")
         urScanner.scanWallet()
     }
 
     function scanTxData() {
-        root.mode = root.modes.Address
+        root.ur = false
+        root.active = true
         scanType.text = qsTr("Scan Tx Data QR Code")
         urScanner.scanTxData()
     }
 
     function scanOutputs() {
-        root.mode = root.modes.Outputs
+        root.active = true
         scanType.text = qsTr("Scan Outputs UR Code")
         urScanner.scanOutputs()
     }
 
     function scanKeyImages() {
-        root.mode = root.modes.KeyImages
+        root.active = true
         scanType.text = qsTr("Scan Key Images UR Code")
         urScanner.scanKeyImages()
     }
 
     function scanUnsignedTx() {
-        root.mode = root.modes.UnsignedTx
+        root.active = true
         scanType.text = qsTr("Scan Unsigned Transaction UR Code")
         urScanner.scanUnsignedTx()
     }
 
     function scanSignedTx() {
-        root.mode = root.modes.SignedTx
+        root.active = true
         scanType.text = qsTr("Scan Signed Transaction UR Code")
         urScanner.scanSignedTx()
     }
 
     function onUnexpectedFrame(urType){
-        console.warn("unexpected type: " + urType);
+        root.errorMessage = qsTr("Unexpected UR type: ") + urType
     }
 
-    function onReceivedFrames(count){
-        console.warn("frame count: " + count);
+    function onDecodedFrame(unused) {
+        root.errorMessage = ""
     }
 
-    function onDecodedFrame(data){
-        console.warn("decoded frame: " + data);
-    }
     Component.onCompleted: {
         if( QtMultimedia.availableCameras.length === 0) {
             console.warn("No camera available. Disable qrScannerEnabled")
@@ -338,11 +347,10 @@ Rectangle {
         urScanner.signedTx.connect(root.signedTx)
         urScanner.txData.connect(root.txData)
         urScanner.wallet.connect(root.wallet)
-        urScanner.qrCaptureStarted(scanProgress.reset)
-        urScanner.scannedFrames(scanProgress.onScannedFrames)
-        urScanner.estimatedCompletedPercentage(scanProgress.onProgress)
-        urScanner.unexpectedUrType(root.onUnexpectedFrame)
-        urScanner.receivedFrames(root.onReceivedFrames)
-        urScanner.decodedFrame(root.onDecodedFrame)
+        urScanner.qrCaptureStarted.connect(scanProgress.reset)
+        urScanner.scannedFrames.connect(scanProgress.onScannedFrames)
+        urScanner.estimatedCompletedPercentage.connect(scanProgress.onProgress)
+        urScanner.unexpectedUrType.connect(root.onUnexpectedFrame)
+        urScanner.decodedFrame.connect(root.onDecodedFrame)
     }
 }

@@ -12,31 +12,12 @@ Rectangle {
     width: parent.width
     height: parent.height
 
-    visible: false
+    property bool active: false
+    property bool ur: true
+
+    visible: root.active
+    focus: root.active
     color: "black"
-    state: "Stopped"
-    states: [
-        State {
-            name: "Display"
-            StateChangeScript {
-                script: {
-                    root.visible = true
-                    root.focus = true
-                    textDisplayType.text = "UR Code"
-                }
-            }
-        },
-        State {
-            name: "Stopped"
-            StateChangeScript {
-                script: {
-                    root.visible = false
-                    root.focus = false
-                    textDisplayType.text = ""
-                }
-            }
-        }
-    ]
 
     Image {
         id: qrCodeImage
@@ -53,6 +34,7 @@ Rectangle {
 
     Rectangle {
         id: frameInfo
+        visible: textFrameInfo.visible
         height: textFrameInfo.height + 5
         width: textFrameInfo.width + 20
         z: parent.z + 1
@@ -78,6 +60,7 @@ Rectangle {
 
     Rectangle {
         id: displayType
+        visible: textDisplayType.text !== ""
         height: textDisplayType.height + 5
         width: textDisplayType.width + 20
         z: parent.z + 1
@@ -89,6 +72,7 @@ Rectangle {
 
     Text {
         id: textDisplayType
+        visible: displayType.visible
         z: displayType.z + 1
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: btnClose.top
@@ -124,8 +108,49 @@ Rectangle {
         }
     }
 
-    function setData(type, data) {
-        urSender.setData(type, data)
+    function showQr(text) {
+        urSender.sendQrCode(text)
+        root.ur = false
+        root.active = true
+    }
+
+    function showWalletData(address, spendKey, viewKey, mnemonic, height) {
+        urSender.sendWallet(address, spendKey, viewKey, mnemonic, height)
+        root.ur = false
+        root.active = true
+    }
+
+    function showTxData(address, amount, paymentId, recipient, description) {
+        urSender.sendTx(address, amount, paymentId, recipient, description)
+        root.ur = false
+        root.active = true
+    }
+
+    function showOutputs(outputs) {
+        urSender.sendOutputs(outputs)
+        root.active = true
+    }
+
+    function showKeyImages(keyImages) {
+        urSender.sendKeyImages(keyImages)
+        root.active = true
+    }
+
+    function showUnsignedTx(tx) {
+        urSender.sendTxUnsigned(tx)
+        root.active = true
+    }
+
+    function showSignedTx(tx) {
+        urSender.sendTxSigned(tx)
+        root.active = true
+    }
+
+    function close() {
+        textDisplayType.text = ""
+        urSender.sendClear()
+        root.ur = true
+        root.active = false
     }
 
     Component.onCompleted: {
