@@ -103,9 +103,9 @@ bool UnsignedTransaction::sign(const QString &fileName) const
     return m_walletImpl->exportKeyImages(fileName.toStdString() + "_keyImages");
 }
 
-QString UnsignedTransaction::signAsString() const
+QByteArray UnsignedTransaction::signAsString() const
 {
-    return QString::fromStdString(m_pimpl->signAsString());
+    return QByteArray::fromStdString(m_pimpl->signAsString());
 }
 
 void UnsignedTransaction::setFilename(const QString &fileName)

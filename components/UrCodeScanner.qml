@@ -56,6 +56,8 @@ Rectangle {
                 script: {
                     urCamera.stop()
                     urScanner.stop()
+                    root.ur = true
+                    scanProgress.reset()
                     root.visible = false
                     urCamera.cameraState = Camera.UnloadedState
                 }
@@ -228,10 +230,11 @@ Rectangle {
             function onProgress(complete) {
                 scanProgress.progress = Math.floor(complete * 100)
             }
+
             function reset() {
-                scanProgress.progress = 0
                 scanProgress.scannedFrames = 0
                 scanProgress.totalFrames = 0
+                scanProgress.progress = 0
             }
         }
 
@@ -278,7 +281,6 @@ Rectangle {
 
     function cancel() {
         root.active = false
-        root.ur = true
         root.canceled()
     }
 

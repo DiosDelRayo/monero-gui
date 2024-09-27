@@ -890,8 +890,7 @@ Rectangle {
                 console.log("Transfer: export outputs clicked")
                 if(persistentSettings.useURCode) {
                     var outputs = currentWallet.exportOutputsAsString(true);
-                    urSender.sendOutputs(outputs)
-                    urDisplay.state = "Display"
+                    urDisplay.showOutputs(outputs)
                 } else {
                     exportOutputsDialog.open();
                 }
@@ -928,8 +927,7 @@ Rectangle {
                 console.log("Transfer: export key images clicked")
                 if(persistentSettings.useURCode) {
                     var keyImages = currentWallet.exportKeyImagesAsString(true);
-                    urSender.sendKeyImages(keyImages)
-                    urDisplay.state = "Display"
+                    urDisplay.showKeyImages(keyImages)
                 } else {
                     exportKeyImagesDialog.open();
                 }
@@ -1261,8 +1259,7 @@ Rectangle {
             confirmationDialog.onAcceptedCallback = function() {
                 var signed_tx = transaction.signAsString();
                 transaction.destroy();
-                urSender.sendTxSigned(signed_tx)
-                urDisplay.state = "Display"
+                urDisplay.showSignedTx(signed_tx)
             };
             confirmationDialog.onRejectedCallback = transaction.destroy;
 

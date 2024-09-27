@@ -47,9 +47,9 @@ bool PendingTransaction::commit()
     return m_pimpl->commit(m_fileName.toStdString());
 }
 
-QString PendingTransaction::commitAsString() const
+QByteArray PendingTransaction::commitAsString() const
 {
-    return QString::fromStdString(m_pimpl->commit_string());
+    return QByteArray::fromStdString(m_pimpl->commit_string());
 }
 
 quint64 PendingTransaction::amount() const

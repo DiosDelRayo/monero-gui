@@ -40,7 +40,6 @@ Rectangle {
         z: parent.z + 1
         radius: 16
         color: "#FA6800"
-        visible: textFrameInfo.text !== ""
         anchors.centerIn: textFrameInfo
         opacity: 0.4
     }
@@ -48,7 +47,7 @@ Rectangle {
     Text {
         id: textFrameInfo
         z: frameInfo.z + 1
-        visible: urSender.isUrCode
+        visible: textFrameInfo.text !== ""
         text: urSender.currentFrameInfo
         anchors.top: parent.top
         anchors.horizontalCenter: qrCodeImage.horizontalCenter
@@ -90,7 +89,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 20
         anchors.topMargin: 20
-        onClicked: root.state = "Stopped"
+        focus: true
+        onClicked: root.close()
     }
 
     Connections {
@@ -104,7 +104,7 @@ Rectangle {
         anchors.fill: parent
         propagateComposedEvents: true
         onDoubleClicked: {
-            root.state = "Stopped"
+            root.close()
         }
     }
 
@@ -115,33 +115,39 @@ Rectangle {
     }
 
     function showWalletData(address, spendKey, viewKey, mnemonic, height) {
+        textDisplayType.text = qsTr("Wallet")
         urSender.sendWallet(address, spendKey, viewKey, mnemonic, height)
         root.ur = false
         root.active = true
     }
 
     function showTxData(address, amount, paymentId, recipient, description) {
+        textDisplayType.text = qsTr("TX Data")
         urSender.sendTx(address, amount, paymentId, recipient, description)
         root.ur = false
         root.active = true
     }
 
     function showOutputs(outputs) {
+        textDisplayType.text = qsTr("Outputs")
         urSender.sendOutputs(outputs)
         root.active = true
     }
 
     function showKeyImages(keyImages) {
+        textDisplayType.text = qsTr("Key Images")
         urSender.sendKeyImages(keyImages)
         root.active = true
     }
 
     function showUnsignedTx(tx) {
+        textDisplayType.text = qsTr("Unsigned TX")
         urSender.sendTxUnsigned(tx)
         root.active = true
     }
 
     function showSignedTx(tx) {
+        textDisplayType.text = qsTr("Signed TX")
         urSender.sendTxSigned(tx)
         root.active = true
     }

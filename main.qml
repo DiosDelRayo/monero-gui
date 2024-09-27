@@ -854,7 +854,7 @@ ApplicationWindow {
             // here we update txConfirmationPopup
             txConfirmationPopup.transactionAmount = Utils.removeTrailingZeros(walletManager.displayAmount(transaction.amount));
             txConfirmationPopup.transactionFee = Utils.removeTrailingZeros(walletManager.displayAmount(transaction.fee));
-            txConfirmationPopup.confirmButton.text = viewOnly ? qsTr("Save as file") : qsTr("Confirm") + translationManager.emptyString;
+            txConfirmationPopup.confirmButton.text = viewOnly ? (persistentSettings.useURCode?qsTr("Show UR code"):qsTr("Save as file")) : qsTr("Confirm") + translationManager.emptyString;
             txConfirmationPopup.confirmButton.rightIcon = viewOnly ? "" : "qrc:///images/rightArrow.png"
         }
     }
@@ -1003,7 +1003,7 @@ ApplicationWindow {
 
     function onTransactionCommittedForExport(txString, transaction, txid) {
         hideProcessingSplash();
-        if (txString === "") {
+        if (txString.length === 0) {
             console.log("Error committing transaction: " + transaction.errorString);
             informationPopup.title = qsTr("Error") + translationManager.emptyString
             informationPopup.text  = qsTr("Couldn't send the money: ") + transaction.errorString
@@ -1019,9 +1019,7 @@ ApplicationWindow {
             // Clear tx fields
             middlePanel.transferView.clearFields()
             txConfirmationPopup.clearFields()
-            successfulTxPopup.open(txid)
-            urSender.sendTxUnsigned(txString)
-            urDisplay.state = "Display"
+            urDisplay.showUnsignedTx(txString)
         }
         currentWallet.refresh()
         currentWallet.disposeTransaction(transaction)
@@ -1666,7 +1664,7 @@ ApplicationWindow {
                 passwordDialog.open(
                     "",
                     "",
-                    (appWindow.viewOnly ? qsTr("Save transaction file") : qsTr("Send transaction")) + translationManager.emptyString,
+                    (appWindow.viewOnly ? (persistentSettings.useURCode?qsTr("Show transaction UR code"):qsTr("Save transaction file")) : qsTr("Send transaction")) + translationManager.emptyString,
                     appWindow.viewOnly ? "" : FontAwesome.arrowCircleRight);
             }
         }
@@ -2194,7 +2192,7 @@ ApplicationWindow {
         console.log("blocking close event");
         if(builtWithOtsUr) {
             urScannerUi.cancel()
-            urDisplay.state = "Stopped"
+            urDisplay.close()
         }
         if(isAndroid) {
             console.log("blocking android exit");

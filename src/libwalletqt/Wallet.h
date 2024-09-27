@@ -385,7 +385,7 @@ signals:
     void deviceButtonPressed();
     void walletPassphraseNeeded(bool onDevice);
     void transactionCommitted(bool status, PendingTransaction *t, const QStringList& txid);
-    void transactionCommittedForExport(const QString &txAsString, PendingTransaction *t, const QStringList& txid);
+    void transactionCommittedForExport(const QByteArray &txAsString, PendingTransaction *t, const QStringList& txid);
     void heightRefreshed(quint64 walletHeight, quint64 daemonHeight, quint64 targetHeight) const;
     void deviceShowAddressShowed();
 
