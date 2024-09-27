@@ -5,6 +5,3 @@
 [submodule "external/quirc"]
 	path = external/quirc
 	url = https://github.com/dlbeer/quirc/
-[submodule "src/otsur "]
-	path = src/otsur
-	url = https://github.com/DiosDelRayo/monero-ots-ur-qt/
