@@ -86,8 +86,6 @@ if(WITH_SCANNER AND NOT WITH_OTS_UR)
 endif()
 if(WITH_OTS_UR)
     add_definitions(-DWITH_OTS_UR)
-    add_definitions(-DOTS_UR_WITH_QTQUICK)
-    set(OTS_UR_WITH_QTQUICK ON)
 endif()
 
 if(WITH_DESKTOP_ENTRY)
