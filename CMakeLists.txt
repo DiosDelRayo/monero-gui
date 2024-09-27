@@ -12,7 +12,7 @@ option(STATIC "Link libraries statically, requires static Qt")
 
 option(USE_DEVICE_TREZOR "Trezor support compilation" ON)
 option(WITH_SCANNER "Enable webcam QR scanner" OFF)
-option(WITH_OTS_UR "Enable offline transaction signing via UR" OFF)
+option(WITH_OTS_UR "Enable offline transaction signing via UR" ON)
 option(WITH_DESKTOP_ENTRY "Ask to install desktop entry on first startup" ON)
 option(WITH_UPDATER "Regularly check for new updates" ON)
 option(DEV_MODE "Checkout latest monero master on build" OFF)
