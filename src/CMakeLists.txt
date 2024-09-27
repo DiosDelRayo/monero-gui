@@ -157,7 +157,7 @@ endif()
 
 if(WITH_OTS_UR)
     add_subdirectory(otsur)
-    target_link_libraries(monero-wallet-gui urdisplay urscan urregister)
+    target_link_libraries(monero-wallet-gui otsqtquick)
 endif()
 
 add_custom_command(TARGET monero-wallet-gui POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:daemon> $<TARGET_FILE_DIR:monero-wallet-gui>)
